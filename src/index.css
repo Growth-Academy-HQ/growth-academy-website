@@ -3,14 +3,16 @@
 @tailwind utilities;
 
 /* Custom styles */
-body {
-  @apply bg-ga-black text-ga-white;
-}
+@layer base {
+  body {
+    @apply bg-ga-black text-ga-white;
+  }
 
-h1, h2, h3, h4, h5, h6 {
-  @apply font-alata;
-}
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-alata;
+  }
 
-p {
-  @apply font-body;
+  p {
+    @apply font-body;
+  }
 }
