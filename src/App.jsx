@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import Footer from './components/Footer';
 
 // Lazy load pages for better performance
 const HomePage = React.lazy(() => import('./pages/HomePage'));
@@ -74,19 +75,22 @@ const Header = () => {
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-ga-black">
+      <div className="flex flex-col min-h-screen bg-ga-black">
         <Header />
-        <Suspense fallback={<PageLoader />}>
-          <AnimatePresence mode="wait">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/case-studies" element={<CaseStudiesPage />} />
-              <Route path="/shop" element={<ShopPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-            </Routes>
-          </AnimatePresence>
-        </Suspense>
+        <main className="flex-grow">
+          <Suspense fallback={<PageLoader />}>
+            <AnimatePresence mode="wait">
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/case-studies" element={<CaseStudiesPage />} />
+                <Route path="/shop" element={<ShopPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+              </Routes>
+            </AnimatePresence>
+          </Suspense>
+        </main>
+        <Footer />
       </div>
     </Router>
   );
