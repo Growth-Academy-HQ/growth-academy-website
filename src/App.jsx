@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Footer from './components/Footer';
 
@@ -14,7 +14,11 @@ const ContactPage = React.lazy(() => import('./pages/ContactPage'));
 const PageLoader = () => (
   <div className="min-h-screen bg-ga-black flex items-center justify-center">
     <div className="space-y-4 text-center">
-      <div className="animate-spin w-12 h-12 border-4 border-ga-white border-t-transparent rounded-full" />
+      <div 
+        className="animate-spin w-12 h-12 border-4 border-ga-white border-t-transparent rounded-full"
+        role="status"
+        aria-label="Loading"
+      />
       <p className="text-ga-white font-alata">Loading...</p>
     </div>
   </div>
@@ -42,14 +46,14 @@ const Header = () => {
       }`}
     >
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-        <a href="/" className="relative group">
+        <Link to="/" className="relative group">
           <img 
             src="/assets/growth-academy-logo.png" 
             alt="Growth Academy" 
             className="h-10 transition-transform group-hover:scale-105"
           />
-        </a>
-        
+        </Link>
+
         <div className="flex gap-8">
           {[
             ['About', '/about'],
@@ -57,14 +61,14 @@ const Header = () => {
             ['Shop', '/shop'],
             ['Contact', '/contact']
           ].map(([label, path]) => (
-            <a
+            <Link
               key={path}
-              href={path}
+              to={path}
               className="relative font-alata hover:text-ga-light transition-colors group"
             >
               {label}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-ga-white transition-all group-hover:w-full" />
-            </a>
+            </Link>
           ))}
         </div>
       </nav>

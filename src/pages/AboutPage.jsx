@@ -27,99 +27,99 @@ const AboutPage = () => {
   ];
 
   return (
-    <div className="pt-20 bg-ga-black text-ga-white">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="container mx-auto px-6 py-24">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <motion.h1 
-              className="text-5xl md:text-6xl font-alata mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              About Growth Academy
-            </motion.h1>
-            <motion.p 
-              className="text-xl text-ga-light"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              Empowering professionals with the knowledge and tools needed for sustainable business growth.
-            </motion.p>
-          </div>
+    <div className="bg-ga-black">
+      {/* Initial Impact Section */}
+      <section className="min-h-screen flex flex-col items-center justify-center relative pt-20">
+        {/* Background Image with proper centering */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-5">
+          <img 
+            src="/assets/about-background.png" 
+            alt="" 
+            className="w-full h-full object-contain"
+          />
         </div>
+        
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="container mx-auto px-6 text-center relative z-10"
+        >
+          <h1 className="text-6xl md:text-8xl font-alata mb-8">
+            About Growth Academy
+          </h1>
+          <p className="text-xl md:text-2xl text-ga-light max-w-2xl mx-auto mb-16">
+            Scroll to discover our story
+          </p>
+        </motion.div>
+
+        {/* Animated Arrow */}
+        <motion.div
+          className="relative z-10 mt-8"
+          animate={{ 
+            y: [0, 15, 0],
+            opacity: [1, 0.5, 1]
+          }}
+          transition={{ 
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          <svg 
+            width="40" 
+            height="40" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            className="text-ga-white"
+          >
+            <motion.path
+              d="M12 4 L12 20 M5 13 L12 20 L19 13"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </motion.div>
       </section>
 
-      {/* Mission & DNA Video Section */}
-      <section className="py-24 bg-gradient-to-b from-ga-gray/5 to-transparent">
-        <div className="container mx-auto px-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="space-y-8"
-              >
-                <div className="space-y-6">
-                  <h2 className="text-3xl font-alata">Our Mission</h2>
-                  <p className="text-ga-light text-lg leading-relaxed">
-                    To empower businesses and professionals with practical knowledge and tools for 
-                    sustainable growth, making complex marketing strategies accessible and actionable 
-                    for everyone.
-                  </p>
-                </div>
-
-                <div className="space-y-6">
-                  <h2 className="text-3xl font-alata">Our Vision</h2>
-                  <p className="text-ga-light text-lg leading-relaxed">
-                    To be the leading platform for practical business growth education, creating a 
-                    community of successful professionals who drive innovation and excellence in their 
-                    industries.
-                  </p>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                className="relative aspect-square rounded-2xl overflow-hidden shadow-2xl"
-              >
-                <video
-                  className="absolute inset-0 w-full h-full object-cover"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                >
-                  <source src="/assets/dna-video.mp4" type="video/mp4" />
-                </video>
-                <div className="absolute inset-0 bg-gradient-to-r from-ga-black/20 to-transparent" />
-              </motion.div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Core Values Section */}
-      <section className="py-24">
+      {/* Mission Statement Section */}
+      <section className="min-h-screen flex items-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-ga-gray/5 via-transparent to-ga-gray/5" />
         <div className="container mx-auto px-6">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="max-w-4xl"
           >
-            <h2 className="text-4xl font-alata mb-6">Our Core Values</h2>
-            <p className="text-ga-light text-lg max-w-2xl mx-auto">
-              These principles guide everything we do at Growth Academy
+            <h2 className="text-4xl md:text-6xl font-alata mb-8">
+              We empower businesses to grow through knowledge
+            </h2>
+            <p className="text-xl text-ga-light leading-relaxed">
+              Growth Academy HQ provides easy-to-understand content to elevate your
+              marketing and customer experience skills. Whether you're just starting
+              or looking to grow, we're here to help you succeed.
             </p>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Values Section */}
+      <section className="py-32 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-ga-gray/5 to-transparent" />
+        <div className="container mx-auto px-6 relative">
+          <motion.h2
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-4xl font-alata text-center mb-24"
+          >
+            Our Core Values
+          </motion.h2>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
             {values.map((value, index) => (
               <motion.div
                 key={index}
@@ -127,11 +127,12 @@ const AboutPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-ga-gray/10 backdrop-blur-sm border border-ga-gray/20 p-8 rounded-xl
-                         hover:border-ga-gray/30 hover:bg-ga-gray/20 transition-all duration-300"
+                className="group"
               >
-                <div className="text-4xl mb-4">{value.icon}</div>
-                <h3 className="text-xl font-alata mb-3">{value.title}</h3>
+                <div className="mb-6 transform group-hover:scale-110 transition-transform">
+                  {value.icon}
+                </div>
+                <h3 className="text-xl font-alata mb-4">{value.title}</h3>
                 <p className="text-ga-light">{value.description}</p>
               </motion.div>
             ))}
@@ -139,28 +140,38 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Approach Section */}
-      <section className="py-24 bg-gradient-to-b from-transparent to-ga-gray/5">
+      {/* Vision Section */}
+      <section className="min-h-screen flex items-center relative">
+        <div className="absolute inset-0 bg-gradient-to-t from-ga-gray/5 to-transparent" />
         <div className="container mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="max-w-4xl mx-auto text-center space-y-8"
-          >
-            <h2 className="text-4xl font-alata mb-8">Our Approach</h2>
-            <p className="text-lg text-ga-light leading-relaxed">
-              Our academy aims to decode complex strategies and best practices, making them accessible and
-              actionable for professionals and businesses seeking sustainable success. The DNA strand in
-              our logo represents continuous learning, evolution, and the interconnectedness of growth 
-              strategies that drive businesses forward.
-            </p>
-            <p className="text-lg text-ga-light leading-relaxed">
-              At Growth Academy HQ, we are committed to equipping you with the tools and insights needed
-              to optimize growth and enhance customer experiences, ensuring your business thrives in an
-              ever-evolving landscape.
-            </p>
-          </motion.div>
+          <div className="grid md:grid-cols-2 gap-24 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="space-y-8"
+            >
+              <h2 className="text-4xl font-alata">Our Vision</h2>
+              <p className="text-xl text-ga-light leading-relaxed">
+                To be the leading platform for practical business growth education, 
+                creating a community of successful professionals who drive 
+                innovation and excellence in their industries.
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="space-y-8"
+            >
+              <h2 className="text-4xl font-alata">Our Mission</h2>
+              <p className="text-xl text-ga-light leading-relaxed">
+                To empower businesses and professionals with practical knowledge 
+                and tools for sustainable growth, making complex marketing 
+                strategies accessible and actionable for everyone.
+              </p>
+            </motion.div>
+          </div>
         </div>
       </section>
     </div>

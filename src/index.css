@@ -16,3 +16,6 @@
     @apply font-body;
   }
 }
+body.menu-open {
+  overflow: hidden;
+}
