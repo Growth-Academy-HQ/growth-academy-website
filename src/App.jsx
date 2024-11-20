@@ -9,6 +9,10 @@ const AboutPage = React.lazy(() => import('./pages/AboutPage'));
 const CaseStudiesPage = React.lazy(() => import('./pages/CaseStudiesPage'));
 const ShopPage = React.lazy(() => import('./pages/ShopPage'));
 const ContactPage = React.lazy(() => import('./pages/ContactPage'));
+const CaseStudyTemplate = React.lazy(() => import('./components/case-studies/CaseStudyTemplate'));
+
+// Import case studies data
+import { dropboxCaseStudy, airbnbCaseStudy, linkedinCaseStudy } from './data/case-studies';
 
 // Loading component
 const PageLoader = () => (
@@ -88,6 +92,18 @@ function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/case-studies" element={<CaseStudiesPage />} />
+                <Route 
+                  path="/case-studies/dropbox" 
+                  element={<CaseStudyTemplate caseStudy={dropboxCaseStudy} />} 
+                />
+                <Route 
+                  path="/case-studies/airbnb" 
+                  element={<CaseStudyTemplate caseStudy={airbnbCaseStudy} />} 
+                />
+                <Route 
+                  path="/case-studies/linkedin" 
+                  element={<CaseStudyTemplate caseStudy={linkedinCaseStudy} />} 
+                />
                 <Route path="/shop" element={<ShopPage />} />
                 <Route path="/contact" element={<ContactPage />} />
               </Routes>
