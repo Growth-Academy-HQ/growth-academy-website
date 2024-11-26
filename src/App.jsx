@@ -9,6 +9,7 @@ const AboutPage = React.lazy(() => import('./pages/AboutPage'));
 const CaseStudiesPage = React.lazy(() => import('./pages/CaseStudiesPage'));
 const ShopPage = React.lazy(() => import('./pages/ShopPage'));
 const ContactPage = React.lazy(() => import('./pages/ContactPage'));
+const GrowthAIPage = React.lazy(() => import('./pages/GrowthAIPage'));
 const CaseStudyTemplate = React.lazy(() => import('./components/case-studies/CaseStudyTemplate'));
 
 // Import case studies data
@@ -63,7 +64,8 @@ const Header = () => {
             ['About', '/about'],
             ['Case Studies', '/case-studies'],
             ['Shop', '/shop'],
-            ['Contact', '/contact']
+            ['Contact', '/contact'],
+            ['GrowthAI', '/growth-ai']
           ].map(([label, path]) => (
             <Link
               key={path}
@@ -106,6 +108,7 @@ function App() {
                 />
                 <Route path="/shop" element={<ShopPage />} />
                 <Route path="/contact" element={<ContactPage />} />
+                <Route path="/growth-ai" element={<GrowthAIPage />} />
               </Routes>
             </AnimatePresence>
           </Suspense>

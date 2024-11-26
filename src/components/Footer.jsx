@@ -44,6 +44,7 @@ const Footer = () => {
               <a href="/case-studies" className="text-ga-light hover:text-ga-white transition-colors">Case Studies</a>
               <a href="/shop" className="text-ga-light hover:text-ga-white transition-colors">Shop</a>
               <a href="/contact" className="text-ga-light hover:text-ga-white transition-colors">Contact</a>
+              <a href="/growth-ai" className="text-ga-light hover:text-gawhite transition-colors">GrowthAI</a>
             </div>
           </div>
 

@@ -10,9 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
     "@headlessui/react": "^2.2.0",
+    "@lemonsqueezy/lemonsqueezy.js": "^4.0.0",
+    "@supabase/supabase-js": "^2.46.1",
     "firebase": "^11.0.1",
     "framer-motion": "^11.11.11",
+    "jsonwebtoken": "^9.0.2",
     "jspdf": "^2.5.2",
     "jspdf-autotable": "^3.8.4",
     "lucide-react": "^0.456.0",
@@ -22,6 +26,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
+    "@shadcn/ui": "^0.0.4",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
