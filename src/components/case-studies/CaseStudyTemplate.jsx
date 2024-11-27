@@ -293,7 +293,14 @@ const CaseStudyTemplate = ({ caseStudy }) => {
             >
               <h2 className="text-3xl font-alata mb-6">The Results</h2>
               <div className="prose prose-invert max-w-none">
-                {results}
+                <p>{results.summary}</p>
+                <ul className="list-disc pl-5 mt-4">
+                  {results.bullets.map((bullet, index) => (
+                    <li key={index}>
+                      <strong>{bullet.metric}:</strong> {bullet.description}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </motion.div>
 

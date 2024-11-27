@@ -14,12 +14,31 @@ export const airbnbCaseStudy = {
       "- Developed professional photography service to improve listing quality\n" +
       "- Implemented data-driven pricing recommendations for hosts\n" +
       "- Built trust through detailed user profiles and review systems",
-    results: "The platform optimization strategy delivered exceptional results:\n\n" +
-      "- 10x increase in bookings for listings with professional photos\n" +
-      "- Average price optimization led to 13% higher booking rates\n" +
-      "- Cross-platform integration drove 200% increase in qualified leads\n" +
-      "- Achieved 100,000+ listings within 16 months\n" +
-      "- Booking conversion rates improved by 50%",
+    results: {
+      summary: "The platform optimization strategy delivered exceptional results:",
+      bullets: [
+        {
+          metric: "10x",
+          description: "increase in bookings for listings with professional photos"
+        },
+        {
+          metric: "13%",
+          description: "higher booking rates through price optimization"
+        },
+        {
+          metric: "200%",
+          description: "increase in qualified leads from cross-platform integration"
+        },
+        {
+          metric: "100,000+",
+          description: "listings achieved within 16 months"
+        },
+        {
+          metric: "50%",
+          description: "improvement in booking conversion rates"
+        }
+      ]
+    },
     testimonial: {
       quote: "The professional photography program was a game-changer. It helped us solve the trust problem while simultaneously improving conversion rates. Sometimes you have to do things that don't scale to learn what actually works.",
       name: "Brian Chesky",

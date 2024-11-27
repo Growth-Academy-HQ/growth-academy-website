@@ -16,14 +16,35 @@ export const dropboxCaseStudy = {
       "- Multiple sharing options: email, social media, and direct links\n" +
       "- Double-sided incentive ensuring both parties benefited equally\n\n" +
       "According to Sean Ellis, who led Dropbox's early growth: \"The key was making the reward valuable enough to motivate sharing while ensuring it aligned with the product's core value proposition.\"",
-    results: "The referral program generated extraordinary results, as documented in multiple case studies and confirmed by Dropbox:\n\n" +
-      "- Permanent 60% increase in signups within the first month\n" +
-      "- User base grew from 100,000 to 4 million users in just 15 months\n" +
-      "- 35% of daily signups came through the referral program\n" +
-      "- Referred users were 2.8x more likely to convert to paid plans\n" +
-      "- Cost per acquisition dropped to near-zero for referred users\n" +
-      "- Generated 2.8 million direct referral invites in the first 18 months\n\n" +
-      "During a presentation at the Growth Hackers Conference, Drew Houston revealed: \"The referral program created a viral coefficient greater than 1, meaning that each new user brought in more than one additional user, creating true viral growth.\"",
+    results: {
+      summary: "The referral program generated extraordinary results, as documented in multiple case studies and confirmed by Dropbox:",
+      bullets: [
+        {
+          metric: "60%",
+          description: "increase in signups within the first month"
+        },
+        {
+          metric: "4M",
+          description: "user base growth from 100,000 to 4 million users in 15 months"
+        },
+        {
+          metric: "35%",
+          description: "of daily signups came through the referral program"
+        },
+        {
+          metric: "2.8x",
+          description: "more likely for referred users to convert to paid plans"
+        },
+        {
+          metric: "Near-zero",
+          description: "cost per acquisition for referred users"
+        },
+        {
+          metric: "2.8M",
+          description: "direct referral invites generated in the first 18 months"
+        }
+      ]
+    },
     testimonial: {
       quote: "We implemented our referral program when we had about 100,000 users. In 15 months, we were at 4 million users. That's when we knew we had found our growth engine.",
       name: "Drew Houston",

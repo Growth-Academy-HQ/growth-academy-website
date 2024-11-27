@@ -22,14 +22,35 @@ export const linkedinCaseStudy = {
       "- Building trust through verified connections\n" +
       "- Gamification of profile strength\n" +
       "- Strategic use of email notifications to drive engagement",
-    results: "LinkedIn's growth strategy produced remarkable results:\n\n" +
-      "- Reached 1 million users within the first 18 months\n" +
-      "- Achieved 87% user retention rate\n" +
-      "- Generated 3.2 million profile views per month\n" +
-      "- Each active user invited an average of 7 new members\n" +
-      "- Reduced customer acquisition cost by 60% through viral growth\n" +
-      "- Reached profitability in 2006, earlier than expected\n\n" +
-      "At a Stanford Business School lecture, Hoffman revealed: \"Our viral coefficient exceeded 1.0 within the first year, meaning each new user was bringing in more than one additional user, creating sustainable viral growth.\"",
+    results: {
+      summary: "LinkedIn's growth strategy produced remarkable results:",
+      bullets: [
+        {
+          metric: "1M+",
+          description: "users reached within the first 18 months"
+        },
+        {
+          metric: "87%",
+          description: "user retention rate achieved"
+        },
+        {
+          metric: "3.2M",
+          description: "profile views generated per month"
+        },
+        {
+          metric: "7",
+          description: "new members invited by each active user on average"
+        },
+        {
+          metric: "60%",
+          description: "reduction in customer acquisition cost through viral growth"
+        },
+        {
+          metric: "2006",
+          description: "year LinkedIn reached profitability, earlier than expected"
+        }
+      ]
+    },
     testimonial: {
       quote: "The key to LinkedIn's early growth was understanding that professionals wouldn't engage unless we could demonstrate immediate value. Every feature we built had to satisfy both individual and network value propositions.",
       name: "Reid Hoffman",
