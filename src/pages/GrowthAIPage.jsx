@@ -1,9 +1,68 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-// Update the import path to correctly point to the MarketingPlanGenerator component
+import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../utils/supabase';
 import MarketingPlanGenerator from '../components/marketing-generator/MarketingPlanGenerator';
 
 const GrowthAIPage = () => {
+  const { user } = useAuth();
+  const [hasPurchased, setHasPurchased] = useState(false);
+
+  useEffect(() => {
+    const checkPurchase = async () => {
+      if (!user) return;
+      
+      const { data, error } = await supabase
+        .from('purchases')
+        .select('tier')
+        .eq('user_id', user.id)
+        .single();
+
+      if (data) {
+        setHasPurchased(true);
+      }
+    };
+
+    checkPurchase();
+  }, [user]);
+
+  if (!hasPurchased) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="pt-20 min-h-screen bg-gradient-to-b from-ga-black to-ga-black/90"
+      >
+        <div className="container mx-auto px-6 py-24 text-ga-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-50" />
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-4xl mx-auto text-center space-y-8 relative z-10"
+          >
+            <h1 className="text-5xl font-alata">
+              Unlock AI-Powered Marketing Plans
+            </h1>
+            <p className="text-xl text-ga-light">
+              Choose a plan to start generating custom marketing strategies for your business
+            </p>
+            <div className="flex justify-center gap-4">
+              <Link
+                to="/pricing"
+                className="px-8 py-3 bg-ga-white text-ga-black font-alata rounded hover:bg-ga-light transition-colors"
+              >
+                View Plans
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -103,11 +162,12 @@ const GrowthAIPage = () => {
             <h3 className="text-2xl font-alata mb-2">Launch Offer</h3>
             <p className="text-4xl font-alata mb-4">$29</p>
             <p className="text-ga-light mb-6">Generate 5 custom marketing plans</p>
-            <button
-              className="w-full px-8 py-3 bg-ga-white text-ga-black font-alata rounded hover:bg-ga-light transition-colors"
+            <Link
+              to="/pricing"
+              className="block w-full px-8 py-3 bg-ga-white text-ga-black font-alata rounded hover:bg-ga-light transition-colors"
             >
               Get Started
-            </button>
+            </Link>
           </motion.div>
         </div>
       </motion.section>

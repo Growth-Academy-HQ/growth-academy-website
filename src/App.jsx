@@ -2,6 +2,12 @@ import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Footer from './components/Footer';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { SignIn } from './components/auth/SignIn';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { Toaster } from 'sonner'
+import { ProfileDropdown } from './components/profile/ProfileDropdown'
+import { ProfilePage } from './pages/ProfilePage'
 
 // Lazy load pages for better performance
 const HomePage = React.lazy(() => import('./pages/HomePage'));
@@ -11,6 +17,7 @@ const ShopPage = React.lazy(() => import('./pages/ShopPage'));
 const ContactPage = React.lazy(() => import('./pages/ContactPage'));
 const GrowthAIPage = React.lazy(() => import('./pages/GrowthAIPage'));
 const CaseStudyTemplate = React.lazy(() => import('./components/case-studies/CaseStudyTemplate'));
+const PricingPage = React.lazy(() => import('./pages/PricingPage'));
 
 // Import case studies data
 import { dropboxCaseStudy, airbnbCaseStudy, linkedinCaseStudy } from './data/case-studies';
@@ -29,8 +36,9 @@ const PageLoader = () => (
   </div>
 );
 
-// Navigation component with animations
+// Header component
 const Header = () => {
+  const { user } = useAuth();
   const [isScrolled, setIsScrolled] = React.useState(false);
 
   React.useEffect(() => {
@@ -45,9 +53,7 @@ const Header = () => {
   return (
     <header 
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-ga-black/95 backdrop-blur-sm shadow-lg' 
-          : 'bg-transparent'
+        isScrolled ? 'bg-ga-black/95 backdrop-blur-sm shadow-lg' : 'bg-transparent'
       }`}
     >
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -77,6 +83,18 @@ const Header = () => {
             </Link>
           ))}
         </div>
+        <div className="flex items-center gap-4">
+          {user ? (
+            <ProfileDropdown />
+          ) : (
+            <Link
+              to="/signin"
+              className="relative font-alata hover:text-ga-light transition-colors group"
+            >
+              Sign In
+            </Link>
+          )}
+        </div>
       </nav>
     </header>
   );
@@ -85,36 +103,56 @@ const Header = () => {
 function App() {
   return (
     <Router>
-      <div className="flex flex-col min-h-screen bg-ga-black">
-        <Header />
-        <main className="flex-grow">
-          <Suspense fallback={<PageLoader />}>
-            <AnimatePresence mode="wait">
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/case-studies" element={<CaseStudiesPage />} />
-                <Route 
-                  path="/case-studies/dropbox" 
-                  element={<CaseStudyTemplate caseStudy={dropboxCaseStudy} />} 
-                />
-                <Route 
-                  path="/case-studies/airbnb" 
-                  element={<CaseStudyTemplate caseStudy={airbnbCaseStudy} />} 
-                />
-                <Route 
-                  path="/case-studies/linkedin" 
-                  element={<CaseStudyTemplate caseStudy={linkedinCaseStudy} />} 
-                />
-                <Route path="/shop" element={<ShopPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-                <Route path="/growth-ai" element={<GrowthAIPage />} />
-              </Routes>
-            </AnimatePresence>
-          </Suspense>
-        </main>
-        <Footer />
-      </div>
+      <AuthProvider>
+        <div className="flex flex-col min-h-screen bg-ga-black">
+          <Header />
+          <main className="flex-grow">
+            <Suspense fallback={<PageLoader />}>
+              <AnimatePresence mode="wait">
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/case-studies" element={<CaseStudiesPage />} />
+                  <Route 
+                    path="/case-studies/dropbox" 
+                    element={<CaseStudyTemplate caseStudy={dropboxCaseStudy} />} 
+                  />
+                  <Route 
+                    path="/case-studies/airbnb" 
+                    element={<CaseStudyTemplate caseStudy={airbnbCaseStudy} />} 
+                  />
+                  <Route 
+                    path="/case-studies/linkedin" 
+                    element={<CaseStudyTemplate caseStudy={linkedinCaseStudy} />} 
+                  />
+                  <Route path="/shop" element={<ShopPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                  <Route 
+                    path="/growth-ai" 
+                    element={
+                      <ProtectedRoute>
+                        <GrowthAIPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route path="/signin" element={<SignIn />} />
+                  <Route path="/pricing" element={<PricingPage />} />
+                  <Route 
+                    path="/profile" 
+                    element={
+                      <ProtectedRoute>
+                        <ProfilePage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                </Routes>
+              </AnimatePresence>
+            </Suspense>
+          </main>
+          <Footer />
+        </div>
+        <Toaster position="top-right" theme="dark" />
+      </AuthProvider>
     </Router>
   );
 }
