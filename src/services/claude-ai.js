@@ -4,13 +4,13 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-export const generateMarketingPlan = async (businessData) => {
+export const generateMarketingPlan = async (formData) => {
   let attempts = 0;
   
   while (attempts < MAX_RETRIES) {
     try {
       console.log('Starting request to:', `${API_BASE_URL}/api/generate-plan`);
-      console.log('With data:', businessData);
+      console.log('With data:', formData);
 
       const response = await fetch(`${API_BASE_URL}/api/generate-plan`, {
         method: 'POST',
@@ -18,11 +18,12 @@ export const generateMarketingPlan = async (businessData) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          businessIdea: businessData.businessIdea,
-          targetMarket: businessData.targetMarket,
-          currentStage: businessData.currentStage,
-          marketingGoals: businessData.marketingGoals,
-          budget: businessData.budget
+          planName: formData.planName,
+          businessIdea: formData.businessIdea,
+          targetMarket: formData.targetMarket,
+          currentStage: formData.currentStage,
+          marketingGoals: formData.marketingGoals,
+          budget: formData.budget
         })
       });
 

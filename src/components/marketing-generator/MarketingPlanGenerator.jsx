@@ -9,6 +9,7 @@ const MarketingPlanGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [formData, setFormData] = useState({
+    planName: '',
     businessIdea: '',
     targetMarket: '',
     currentStage: '',
@@ -58,7 +59,7 @@ const MarketingPlanGenerator = () => {
         <div className="p-6 border-b border-ga-white/10">
           <div className="flex items-center justify-between">
             <img 
-              src="/src/assets/growth-ai-logo.svg" 
+              src="/assets/growth-ai-logo.svg" 
               alt="GrowthAI" 
               className="h-8"
             />
@@ -69,7 +70,20 @@ const MarketingPlanGenerator = () => {
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Form fields remain the same as your original code */}
+          {/* Plan Name */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-ga-white">
+              Plan Name
+            </label>
+            <input
+              type="text"
+              placeholder="e.g., Summer Campaign 2024"
+              value={formData.planName}
+              onChange={(e) => handleInputChange('planName', e.target.value)}
+              className="w-full px-3 py-2 bg-ga-black/30 border border-ga-white/10 rounded-md text-ga-white placeholder:text-ga-white/50 focus:outline-none focus:ring-2 focus:ring-ga-white/20"
+            />
+          </div>
+
           {/* Business Idea */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-ga-white">
@@ -146,7 +160,7 @@ const MarketingPlanGenerator = () => {
 
           <button
             onClick={handleGenerate}
-            disabled={isGenerating || !formData.businessIdea || !formData.targetMarket || !formData.currentStage || !formData.marketingGoals || !formData.budget}
+            disabled={isGenerating || !formData.planName || !formData.businessIdea || !formData.targetMarket || !formData.currentStage || !formData.marketingGoals || !formData.budget}
             className="w-full px-6 py-3 bg-ga-white text-ga-black hover:bg-ga-light transition-colors rounded-md font-alata disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isGenerating ? (

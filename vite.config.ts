@@ -15,10 +15,10 @@ export default defineConfig(({ mode }: ConfigEnv) => {
     },
     server: {
       proxy: {
-        '/api': {
+        '/api/v1': {
           target: 'https://api.anthropic.com',
           changeOrigin: true,
-          rewrite: (path: string) => path.replace(/^\/api/, ''),
+          rewrite: (path: string) => path.replace(/^\/api\/v1/, ''),
           configure: (proxy, options) => {
             proxy.on('error', (err, req, res) => {
               console.log('proxy error', err)
@@ -32,6 +32,11 @@ export default defineConfig(({ mode }: ConfigEnv) => {
               console.log('Received Response:', proxyRes.statusCode, req.url)
             })
           }
+        },
+        '/api/stripe': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+          secure: false,
         }
       }
     }

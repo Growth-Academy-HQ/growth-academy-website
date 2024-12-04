@@ -1,33 +1,71 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../utils/supabase';
+import { useUser, useAuth } from "@clerk/clerk-react";
+import { useClerkSupabaseClient } from '../utils/supabase';
 import MarketingPlanGenerator from '../components/marketing-generator/MarketingPlanGenerator';
 
 const GrowthAIPage = () => {
-  const { user } = useAuth();
-  const [hasPurchased, setHasPurchased] = useState(false);
+  const { user } = useUser();
+  const { getToken } = useAuth();
+  const [subscription, setSubscription] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const supabase = useClerkSupabaseClient();
 
   useEffect(() => {
-    const checkPurchase = async () => {
-      if (!user) return;
+    const checkSubscription = async () => {
+      if (!user || !supabase) return;
       
-      const { data, error } = await supabase
-        .from('purchases')
-        .select('tier')
-        .eq('user_id', user.id)
-        .single();
+      try {
+        // Get fresh token
+        const token = await getToken({ template: 'supabase' });
+        if (!token) throw new Error('No auth token');
 
-      if (data) {
-        setHasPurchased(true);
+        // Set auth header
+        supabase.rest.headers['Authorization'] = `Bearer ${token}`;
+
+        const { data, error } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching subscription:', error);
+        } else {
+          setSubscription(data);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    checkPurchase();
-  }, [user]);
+    checkSubscription();
+  }, [user, supabase, getToken]);
 
-  if (!hasPurchased) {
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="pt-20 min-h-screen bg-gradient-to-b from-ga-black to-ga-black/90">
+        <div className="container mx-auto px-6 py-24 text-ga-white">
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show Marketing Plan Generator for:
+  // 1. Pro/Expert subscribers
+  // 2. Free users who haven't used their one-time access
+  // 3. Users with existing marketing plans
+  const canAccessGenerator = 
+    subscription?.plan_type === 'pro' || 
+    subscription?.plan_type === 'expert' ||
+    subscription?.plan_type === 'free';
+
+  if (!canAccessGenerator) {
     return (
       <motion.div
         initial={{ opacity: 0 }}
@@ -70,104 +108,77 @@ const GrowthAIPage = () => {
       exit={{ opacity: 0 }}
       className="pt-20 min-h-screen bg-gradient-to-b from-ga-black to-ga-black/90"
     >
-      {/* Hero Section */}
-      <section className="container mx-auto px-6 py-24 text-ga-white relative overflow-hidden">
+      {/* Hero Section - Simplified */}
+      <section className="container mx-auto px-6 py-12 text-ga-white relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-50" />
         <motion.div 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8 }}
-          className="max-w-4xl mx-auto text-center space-y-8 relative z-10"
+          className="max-w-4xl mx-auto text-center space-y-4 relative z-10"
         >
-          <h1 className="text-5xl font-alata">
-            AI-Powered Marketing Plan Generator
+          <h1 className="text-4xl font-alata">
+            Marketing Plan Generator
           </h1>
-          <p className="text-xl text-ga-light">
-            Transform your business ideas into actionable marketing strategies with our AI assistant.
-          </p>
-          <div className="flex justify-center gap-4">
-            <button
-              className="px-8 py-3 bg-ga-white text-ga-black font-alata rounded hover:bg-ga-light transition-colors"
-            >
-              Get Started
-            </button>
-            <button
-              className="px-8 py-3 border border-ga-white text-ga-white font-alata rounded hover:bg-ga-white/10 transition-colors"
-            >
-              Learn More
-            </button>
+          {subscription?.plan_type === 'free' ? (
+            <p className="text-ga-light text-lg">
+              You have one free marketing plan generation available. Make it count!
+            </p>
+          ) : (
+            <p className="text-ga-light text-lg">
+              Generate custom marketing strategies tailored to your business needs
+            </p>
+          )}
+          
+          {/* Usage Stats */}
+          <div className="mt-6 p-4 bg-ga-black/30 rounded-lg inline-block">
+            <p className="text-sm text-ga-light">
+              {subscription?.plan_type === 'pro' ? (
+                'Pro Plan: 10 generations remaining this month'
+              ) : subscription?.plan_type === 'expert' ? (
+                'Expert Plan: 30 generations remaining this month'
+              ) : (
+                'Free Plan: 1 generation available'
+              )}
+            </p>
           </div>
         </motion.div>
       </section>
       
-      {/* Generator Interface Section */}
+      {/* Generator Interface */}
       <motion.section 
         initial={{ y: 20, opacity: 0 }}
-        whileInView={{ y: 0, opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-        className="container mx-auto px-6 py-16"
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.6 }}
+        className="container mx-auto px-6 py-8"
       >
-        <MarketingPlanGenerator />
-      </motion.section>
-
-      {/* Features Section */}
-      <section className="container mx-auto px-6 py-16">
-        <div className="grid md:grid-cols-3 gap-8">
-          {[
-            {
-              title: 'Custom Marketing Plans',
-              description: 'Get personalized marketing strategies tailored to your business needs and goals.'
-            },
-            {
-              title: 'AI-Powered Insights',
-              description: 'Leverage advanced AI to analyze market trends and optimize your marketing approach.'
-            },
-            {
-              title: 'Actionable Steps',
-              description: 'Receive clear, step-by-step guidance to implement your marketing strategy effectively.'
-            }
-          ].map((feature, index) => (
-            <motion.div
-              key={index}
-              initial={{ y: 20, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.2 }}
-              whileHover={{ scale: 1.02, translateY: -5 }}
-              className="p-8 bg-gradient-to-b from-ga-black/80 to-ga-black/40 rounded-xl border border-ga-white/10 text-ga-white backdrop-blur-sm shadow-xl hover:border-ga-white/20 transition-all"
-            >
-              <h3 className="text-2xl font-alata mb-4">{feature.title}</h3>
-              <p className="text-ga-light">{feature.description}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <motion.section 
-        initial={{ y: 20, opacity: 0 }}
-        whileInView={{ y: 0, opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-        className="container mx-auto px-6 py-16 text-ga-white"
-      >
-        <div className="max-w-md mx-auto text-center">
-          <h2 className="text-4xl font-alata mb-4">Start Growing Today</h2>
-          <p className="text-ga-light mb-8">Take your marketing to the next level</p>
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-ga-black/30 border border-ga-white/10 rounded-xl p-8 backdrop-blur-sm">
+            <MarketingPlanGenerator 
+              subscription={subscription}
+              className="w-full"
+            />
+          </div>
+          
+          {/* Tips Section */}
           <motion.div 
-            whileHover={{ scale: 1.02 }}
-            className="p-8 bg-gradient-to-b from-ga-black/80 to-ga-black/40 rounded-xl border border-ga-white/10 shadow-xl"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4"
           >
-            <h3 className="text-2xl font-alata mb-2">Launch Offer</h3>
-            <p className="text-4xl font-alata mb-4">$29</p>
-            <p className="text-ga-light mb-6">Generate 5 custom marketing plans</p>
-            <Link
-              to="/pricing"
-              className="block w-full px-8 py-3 bg-ga-white text-ga-black font-alata rounded hover:bg-ga-light transition-colors"
-            >
-              Get Started
-            </Link>
+            <div className="p-4 bg-ga-black/20 rounded-lg border border-ga-white/5">
+              <h3 className="text-ga-white font-semibold mb-2">Pro Tip</h3>
+              <p className="text-ga-light text-sm">
+                Be specific about your target audience and business goals for better results
+              </p>
+            </div>
+            <div className="p-4 bg-ga-black/20 rounded-lg border border-ga-white/5">
+              <h3 className="text-ga-white font-semibold mb-2">Best Practice</h3>
+              <p className="text-ga-light text-sm">
+                Include your current marketing challenges to get more targeted strategies
+              </p>
+            </div>
           </motion.div>
         </div>
       </motion.section>

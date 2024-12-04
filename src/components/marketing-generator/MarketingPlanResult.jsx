@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Download, Share2 } from 'lucide-react';
+import { ArrowLeft, Download, Share2, FileText } from 'lucide-react';
 
 const MarketingPlanResult = ({ plan, inputs, onBack }) => {
   const sections = [
@@ -27,12 +27,17 @@ const MarketingPlanResult = ({ plan, inputs, onBack }) => {
   return (
     <div className="min-h-screen bg-ga-black/50 p-6">
       <div className="max-w-5xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <Button variant="ghost" onClick={onBack} className="gap-2 text-ga-white">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Generator
-          </Button>
+        {/* Header with Plan Name */}
+        <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" onClick={onBack} className="text-ga-white">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-alata text-ga-white">{inputs.planName}</h1>
+              <p className="text-sm text-ga-light">Marketing Plan</p>
+            </div>
+          </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleShare} className="gap-2 text-ga-white border-ga-white/10">
               <Share2 className="w-4 h-4" />
@@ -45,13 +50,18 @@ const MarketingPlanResult = ({ plan, inputs, onBack }) => {
           </div>
         </div>
 
-        {/* Input Summary */}
+        {/* Input Summary Card */}
         <Card className="bg-ga-black/30 border-ga-white/10">
           <CardHeader>
-            <CardTitle className="text-ga-white">Marketing Plan for {inputs.businessIdea}</CardTitle>
-            <CardDescription className="text-ga-light">Generated based on your inputs</CardDescription>
+            <div className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-purple-400" />
+              <div>
+                <CardTitle className="text-ga-white">Plan Details</CardTitle>
+                <CardDescription className="text-ga-light">Generated for {inputs.businessIdea}</CardDescription>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4 text-sm">
+          <CardContent className="grid md:grid-cols-2 gap-4 text-sm">
             <div>
               <p className="font-medium text-ga-white">Target Market:</p>
               <p className="text-ga-light">{inputs.targetMarket}</p>

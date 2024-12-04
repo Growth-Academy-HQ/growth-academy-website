@@ -1,19 +1,12 @@
-import { supabase } from '../../utils/supabase'
+import { useClerk } from '@clerk/clerk-react'
 import { Button } from "@/components/ui/button"
 
 export function SignOut() {
-  const handleSignOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-    } catch (error) {
-      alert(error.message)
-    }
-  }
+  const { signOut } = useClerk()
 
   return (
     <Button 
-      onClick={handleSignOut}
+      onClick={() => signOut()}
       variant="outline" 
       className="border-ga-white/10 text-ga-white hover:bg-ga-white/10"
     >

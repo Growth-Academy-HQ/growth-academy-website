@@ -1,16 +1,25 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { Anthropic } = require('@anthropic-ai/sdk');
-require('dotenv').config();
+const stripeRoutes = require('./routes/stripe');
+const clerkRoutes = require('./routes/clerk');
+
 
 const app = express();
 const port = 3001;
 
-// Middleware
+// Webhook middleware (must come before other middleware)
+app.post('/api/stripe/webhooks', express.raw({type: 'application/json'}));
+
+// Important: Raw body parsing for webhooks must come BEFORE json parsing
+app.use('/api/clerk/webhooks', express.raw({ type: 'application/json' }));
+
+// Regular middleware
 app.use(cors({
   origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
   methods: ['POST', 'GET', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Accept'],
+  allowedHeaders: ['Content-Type', 'Accept', 'stripe-signature'],
   credentials: true
 }));
 app.use(express.json());
@@ -130,6 +139,12 @@ app.post('/api/generate-plan', async (req, res) => {
     });
   }
 });
+
+// Add Stripe routes
+app.use('/api/stripe', stripeRoutes);
+
+// Add Clerk routes
+app.use('/api/clerk', clerkRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

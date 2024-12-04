@@ -1,6 +1,6 @@
-import { SignIn as ClerkSignIn } from '@clerk/clerk-react'
+import { SignUp as ClerkSignUp } from '@clerk/clerk-react'
 
-export function SignIn() {
+export function SignUp() {
   const appearance = {
     layout: {
       logoPlacement: "inside",
@@ -28,21 +28,6 @@ export function SignIn() {
       formFieldSuccessText: "text-green-600",
       formFieldErrorText: "text-red-600",
       alternativeMethodsBlockButton: "text-gray-600 border border-gray-200 hover:bg-gray-50",
-      card: {
-        backgroundColor: "#fff",
-        borderRadius: "1rem",
-        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
-      },
-      socialButtons: {
-        iconButton: {
-          backgroundColor: "#fff",
-          borderColor: "#e5e7eb",
-          color: "#374151",
-          "&:hover": {
-            backgroundColor: "#f9fafb",
-          }
-        }
-      }
     },
     variables: {
       colorPrimary: "#000",
@@ -58,12 +43,14 @@ export function SignIn() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-ga-black to-ga-black/95">
       <div className="w-full max-w-md p-4">
-        <ClerkSignIn 
+        <ClerkSignUp 
           appearance={appearance}
           routing="path" 
-          path="/signin"
+          path="/signup"
         />
       </div>
     </div>
   )
 }
+
+export default SignUp
