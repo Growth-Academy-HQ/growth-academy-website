@@ -4,15 +4,23 @@ import { Link } from 'react-router-dom';
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { useClerkSupabaseClient } from '../utils/supabase';
 import MarketingPlanGenerator from '../components/marketing-generator/MarketingPlanGenerator';
+import { WelcomeModal } from '../components/WelcomeModal';
 
 const GrowthAIPage = () => {
   const { user } = useUser();
   const { getToken } = useAuth();
   const [subscription, setSubscription] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const supabase = useClerkSupabaseClient();
 
   useEffect(() => {
+    // Show welcome modal for non-authenticated users
+    if (!user) {
+      setShowWelcomeModal(true);
+      return;
+    }
+
     const checkSubscription = async () => {
       if (!user || !supabase) return;
       
@@ -44,6 +52,16 @@ const GrowthAIPage = () => {
 
     checkSubscription();
   }, [user, supabase, getToken]);
+
+  // Show welcome modal for non-authenticated users
+  if (!user) {
+    return (
+      <WelcomeModal 
+        isOpen={showWelcomeModal} 
+        onClose={() => setShowWelcomeModal(false)} 
+      />
+    );
+  }
 
   // Show loading state
   if (isLoading) {
@@ -108,7 +126,7 @@ const GrowthAIPage = () => {
       exit={{ opacity: 0 }}
       className="pt-20 min-h-screen bg-gradient-to-b from-ga-black to-ga-black/90"
     >
-      {/* Hero Section - Simplified */}
+      {/* Hero Section */}
       <section className="container mx-auto px-6 py-12 text-ga-white relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 opacity-50" />
         <motion.div 

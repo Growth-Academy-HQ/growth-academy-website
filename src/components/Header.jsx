@@ -22,6 +22,7 @@ export function Header() {
     ['GrowthAI', '/growth-ai'],
     ...(isSignedIn ? [['Dashboard', '/dashboard']] : []),
     ['Shop', '/shop'],
+    ['Pricing', '/pricing'],
     ['Contact', '/contact'],
   ];
 

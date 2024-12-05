@@ -1,7 +1,7 @@
 // src/components/marketing-generator/MarketingPlanGenerator.jsx
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, Download, Share2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { generateMarketingPlan } from '../../services/claude-ai';
 import MarketingPlanResult from './MarketingPlanResult';
 
@@ -56,17 +56,22 @@ const MarketingPlanGenerator = () => {
   return (
     <div className="relative max-w-4xl mx-auto px-4 py-8">
       <div className="bg-ga-black/50 border border-ga-white/10 rounded-lg overflow-hidden">
-        <div className="p-6 border-b border-ga-white/10">
-          <div className="flex items-center justify-between">
+        <div className="p-8 border-b border-ga-white/10">
+          <div className="flex items-center space-x-6">
             <img 
               src="/assets/growth-ai-logo.svg" 
               alt="GrowthAI" 
-              className="h-8"
+              className="w-16 h-16"
             />
+            <div>
+              <h2 className="text-3xl font-alata text-ga-white">
+                Marketing Plan Generator
+              </h2>
+              <p className="text-ga-white/70 mt-2">
+                Create your custom marketing strategy in minutes
+              </p>
+            </div>
           </div>
-          <h2 className="text-2xl font-alata text-ga-white mt-4">
-            Marketing Plan Generator
-          </h2>
         </div>
 
         <div className="p-6 space-y-6">
@@ -75,9 +80,9 @@ const MarketingPlanGenerator = () => {
             <label className="text-sm font-medium text-ga-white">
               Plan Name
             </label>
-            <input
-              type="text"
-              placeholder="e.g., Summer Campaign 2024"
+          <input 
+            type="text"
+            placeholder="e.g., Summer Campaign 2024"
               value={formData.planName}
               onChange={(e) => handleInputChange('planName', e.target.value)}
               className="w-full px-3 py-2 bg-ga-black/30 border border-ga-white/10 rounded-md text-ga-white placeholder:text-ga-white/50 focus:outline-none focus:ring-2 focus:ring-ga-white/20"
@@ -94,8 +99,8 @@ const MarketingPlanGenerator = () => {
               value={formData.businessIdea}
               onChange={(e) => handleInputChange('businessIdea', e.target.value)}
               className="w-full min-h-[100px] px-3 py-2 bg-ga-black/30 border border-ga-white/10 rounded-md text-ga-white placeholder:text-ga-white/50 focus:outline-none focus:ring-2 focus:ring-ga-white/20"
-            />
-          </div>
+          />
+        </div>
 
           {/* Target Market */}
           <div className="space-y-2">

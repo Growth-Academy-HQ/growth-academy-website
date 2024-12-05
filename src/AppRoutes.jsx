@@ -34,6 +34,7 @@ export function AppRoutes() {
         <Route path="/signin/*" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/growth-ai" element={<GrowthAIPage />} />
         
         {/* Case study routes */}
         <Route 
@@ -53,11 +54,6 @@ export function AppRoutes() {
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <DashboardPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/growth-ai" element={
-          <ProtectedRoute>
-            <GrowthAIPage />
           </ProtectedRoute>
         } />
       </Routes>

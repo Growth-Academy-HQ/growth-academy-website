@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useUser, useAuth } from "@clerk/clerk-react"
 import { useClerkSupabaseClient } from '../utils/supabase'
-import { useMarketingPlans } from '../utils/marketingPlans'
+import { useSubscriptions } from '../utils/subscriptions'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
@@ -29,7 +29,7 @@ export function DashboardPage() {
   const [marketingPlans, setMarketingPlans] = useState([])
   const [subscription, setSubscription] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const { getPlans } = useMarketingPlans()
+  const { currentPlan } = useSubscriptions()
   const supabase = useClerkSupabaseClient()
 
   useEffect(() => {
@@ -56,8 +56,40 @@ export function DashboardPage() {
           setSubscription(sub || { plan_type: 'free' })
         }
 
-        const plans = await getPlans()
-        setMarketingPlans(plans)
+        const fetchMarketingPlans = async () => {
+          if (!user) return;
+          
+          try {
+            setIsLoading(true);
+            // First get the active subscription
+            const { data: subscription, error: subError } = await supabase
+              .from('subscriptions')
+              .select('id')
+              .eq('user_id', user.id)
+              .eq('status', 'active')
+              .single();
+
+            if (subError) throw subError;
+
+            if (subscription) {
+              // Then get the marketing plans associated with this subscription
+              const { data: plans, error: plansError } = await supabase
+                .from('marketing_plans')
+                .select('*')
+                .eq('subscription_id', subscription.id);
+
+              if (plansError) throw plansError;
+              setMarketingPlans(plans || []);
+            }
+          } catch (error) {
+            console.error('Error fetching marketing plans:', error);
+            setMarketingPlans([]);
+          } finally {
+            setIsLoading(false);
+          }
+        };
+
+        fetchMarketingPlans();
       } catch (error) {
         console.error('Error in fetchData:', error)
         setSubscription({ plan_type: 'free' })
@@ -67,7 +99,7 @@ export function DashboardPage() {
     }
 
     fetchData()
-  }, [user, supabase, getPlans, getToken])
+  }, [user, supabase, getToken])
 
   if (isLoading && !subscription) {
     return (
