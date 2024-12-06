@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   const socialLinks = [
@@ -40,11 +41,14 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="font-alata text-xl">Quick Links</h3>
             <div className="grid grid-cols-2 gap-2">
-              <a href="/about" className="text-ga-light hover:text-ga-white transition-colors">About</a>
-              <a href="/case-studies" className="text-ga-light hover:text-ga-white transition-colors">Case Studies</a>
-              <a href="/shop" className="text-ga-light hover:text-ga-white transition-colors">Shop</a>
-              <a href="/contact" className="text-ga-light hover:text-ga-white transition-colors">Contact</a>
-              <a href="/growth-ai" className="text-ga-light hover:text-gawhite transition-colors">GrowthAI</a>
+              <Link to="/about" className="text-ga-light hover:text-ga-white transition-colors">About</Link>
+              <Link to="/case-studies" className="text-ga-light hover:text-ga-white transition-colors">Case Studies</Link>
+              <Link to="/shop" className="text-ga-light hover:text-ga-white transition-colors">Shop</Link>
+              <Link to="/contact" className="text-ga-light hover:text-ga-white transition-colors">Contact</Link>
+              <Link to="/growth-ai" className="text-ga-light hover:text-ga-white transition-colors">GrowthAI</Link>
+              <Link to="/privacy-policy" className="text-ga-light hover:text-ga-white transition-colors">Privacy Policy</Link>
+              <Link to="/terms-and-conditions" className="text-ga-light hover:text-ga-white transition-colors">Terms and Conditions</Link>
+              <Link to="/refund-policy" className="text-ga-light hover:text-ga-white transition-colors">Refund Policy</Link>
             </div>
           </div>
 

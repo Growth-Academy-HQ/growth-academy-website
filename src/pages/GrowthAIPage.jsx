@@ -5,7 +5,6 @@ import { useUser, useAuth } from "@clerk/clerk-react";
 import { useClerkSupabaseClient } from '../utils/supabase';
 import MarketingPlanGenerator from '../components/marketing-generator/MarketingPlanGenerator';
 import { WelcomeModal } from '../components/WelcomeModal';
-
 const GrowthAIPage = () => {
   const { user } = useUser();
   const { getToken } = useAuth();
@@ -13,31 +12,25 @@ const GrowthAIPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const supabase = useClerkSupabaseClient();
-
   useEffect(() => {
     // Show welcome modal for non-authenticated users
     if (!user) {
       setShowWelcomeModal(true);
       return;
     }
-
     const checkSubscription = async () => {
       if (!user || !supabase) return;
-      
       try {
         // Get fresh token
         const token = await getToken({ template: 'supabase' });
         if (!token) throw new Error('No auth token');
-
         // Set auth header
         supabase.rest.headers['Authorization'] = `Bearer ${token}`;
-
         const { data, error } = await supabase
           .from('subscriptions')
           .select('*')
           .eq('user_id', user.id)
           .single();
-
         if (error) {
           console.error('Error fetching subscription:', error);
         } else {
@@ -49,10 +42,8 @@ const GrowthAIPage = () => {
         setIsLoading(false);
       }
     };
-
     checkSubscription();
   }, [user, supabase, getToken]);
-
   // Show welcome modal for non-authenticated users
   if (!user) {
     return (
@@ -62,7 +53,6 @@ const GrowthAIPage = () => {
       />
     );
   }
-
   // Show loading state
   if (isLoading) {
     return (
@@ -73,7 +63,6 @@ const GrowthAIPage = () => {
       </div>
     );
   }
-
   // Show Marketing Plan Generator for:
   // 1. Pro/Expert subscribers
   // 2. Free users who haven't used their one-time access
@@ -82,7 +71,6 @@ const GrowthAIPage = () => {
     subscription?.plan_type === 'pro' || 
     subscription?.plan_type === 'expert' ||
     subscription?.plan_type === 'free';
-
   if (!canAccessGenerator) {
     return (
       <motion.div
@@ -118,7 +106,6 @@ const GrowthAIPage = () => {
       </motion.div>
     );
   }
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -147,7 +134,6 @@ const GrowthAIPage = () => {
               Generate custom marketing strategies tailored to your business needs
             </p>
           )}
-          
           {/* Usage Stats */}
           <div className="mt-6 p-4 bg-ga-black/30 rounded-lg inline-block">
             <p className="text-sm text-ga-light">
@@ -162,7 +148,6 @@ const GrowthAIPage = () => {
           </div>
         </motion.div>
       </section>
-      
       {/* Generator Interface */}
       <motion.section 
         initial={{ y: 20, opacity: 0 }}
@@ -177,7 +162,6 @@ const GrowthAIPage = () => {
               className="w-full"
             />
           </div>
-          
           {/* Tips Section */}
           <motion.div 
             initial={{ opacity: 0 }}
@@ -203,5 +187,4 @@ const GrowthAIPage = () => {
     </motion.div>
   );
 };
-
 export default GrowthAIPage;

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 import { motion } from 'framer-motion';
+import { sanitizeString, validateInput } from '../utils/security';
+import { contactRateLimiter } from '../utils/rateLimit';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -14,16 +16,43 @@ const ContactPage = () => {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
+  const [submitError, setSubmitError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check rate limit
+    if (!contactRateLimiter.canMakeRequest()) {
+      const waitTime = contactRateLimiter.getTimeUntilNextRequest();
+      const minutes = Math.ceil(waitTime / 60000);
+      setSubmitStatus('rate-limited');
+      setSubmitError(`Please wait ${minutes} minute${minutes > 1 ? 's' : ''} before submitting another message.`);
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitStatus(null);
+
+    // Validate email
+    if (!validateInput(formData.email, 'email')) {
+      setSubmitStatus('error');
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Sanitize form data
+    const sanitizedData = {
+      fullName: sanitizeString(formData.fullName),
+      email: sanitizeString(formData.email),
+      subject: sanitizeString(formData.subject),
+      message: sanitizeString(formData.message),
+      source: sanitizeString(formData.source)
+    };
     
     try {
       // Add to Firestore contacts collection
       await addDoc(collection(db, 'contacts'), {
-        ...formData,
+        ...sanitizedData,
         timestamp: new Date().toISOString(),
         status: 'new'
       });
@@ -229,6 +258,16 @@ const ContactPage = () => {
                 animate={{ opacity: 1, y: 0 }}
               >
                 An error occurred. Please try again later.
+              </motion.div>
+            )}
+
+            {submitStatus === 'rate-limited' && (
+              <motion.div 
+                className="p-4 bg-yellow-500/20 border border-yellow-500 rounded-lg text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                {submitError}
               </motion.div>
             )}
           </form>

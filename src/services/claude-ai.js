@@ -1,10 +1,22 @@
+import { getRateLimiterForSubscription } from '../utils/rateLimit';
+
+// Removed useSubscriptions and getToken imports
+
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-export const generateMarketingPlan = async (formData) => {
+export const generateMarketingPlan = async (formData, token, currentPlan) => { // Added parameters
+  const rateLimiter = getRateLimiterForSubscription(currentPlan);
+
+  if (!rateLimiter.canMakeRequest()) {
+    const waitTime = rateLimiter.getTimeUntilNextRequest();
+    const days = Math.ceil(waitTime / 86400000);
+    throw new Error(`Please wait ${days} day${days > 1 ? 's' : ''} before making another request.`);
+  }
+
   let attempts = 0;
   
   while (attempts < MAX_RETRIES) {
@@ -15,7 +27,8 @@ export const generateMarketingPlan = async (formData) => {
       const response = await fetch(`${API_BASE_URL}/api/generate-plan`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Use token parameter
         },
         body: JSON.stringify({
           planName: formData.planName,

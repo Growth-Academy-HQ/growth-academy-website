@@ -1,15 +1,14 @@
-import { useState, useEffect } from 'react'
-import { useUser, useAuth } from "@clerk/clerk-react"
-import { useClerkSupabaseClient } from '../utils/supabase'
-import { useSubscriptions } from '../utils/subscriptions'
-import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react';
+import { useUser, useAuth } from "@clerk/clerk-react";
+import { useClerkSupabaseClient } from '../utils/supabase';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const SUBSCRIPTION_TIERS = {
   free: {
     name: 'Growth Starter',
     color: 'bg-blue-500',
-    features: ['A one time useof our Marketing Plan Generator','15-minute call with Marketing Expert' , 'Email Support' , 'Access to our newsletter']
+    features: ['A one time use of our Marketing Plan Generator', '15-minute call with Marketing Expert', 'Email Support', 'Access to our newsletter']
   },
   pro: {
     name: 'Growth Pro',
@@ -21,85 +20,112 @@ const SUBSCRIPTION_TIERS = {
     color: 'bg-amber-500',
     features: ['Everything in Growth Pro', '30 uses per month of our Marketing Plan Generator', '1 monthly call with Marketing Expert', 'Priority Email Support', 'Early access to new resources and templates']
   }
-}
+};
 
 export function DashboardPage() {
-  const { user } = useUser()
-  const { getToken } = useAuth()
-  const [marketingPlans, setMarketingPlans] = useState([])
-  const [subscription, setSubscription] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const { currentPlan } = useSubscriptions()
-  const supabase = useClerkSupabaseClient()
+  const { user } = useUser();
+  const { getToken } = useAuth();
+  const [marketingPlans, setMarketingPlans] = useState([]);
+  const [subscription, setSubscription] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const supabase = useClerkSupabaseClient();
+
+  const fetchDataWithFreshToken = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Get fresh token
+      const token = await refreshSupabaseToken();
+      
+      // Update Supabase client with fresh token
+      await supabase.auth.setSession({
+        access_token: token,
+        refresh_token: null
+      });
+
+      // Fetch subscription
+      const { data: sub, error: subError } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (subError) {
+        console.error('Error fetching subscription:', subError);
+        throw subError;
+      }
+      
+      setSubscription(sub || { plan_type: 'free' });
+
+      // Fetch marketing plans
+      const { data: plans, error: plansError } = await supabase
+        .from('marketing_plans')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (plansError) {
+        throw plansError;
+      }
+
+      setMarketingPlans(plans || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setError(error.message);
+      setSubscription({ plan_type: 'free' });
+      setMarketingPlans([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!user || !supabase) return
+    if (!user || !supabase) return;
+    fetchDataWithFreshToken();
+  }, [user, supabase]);
 
-    const fetchData = async () => {
-      try {
-        setIsLoading(true)
-        
-        const token = await getToken({ template: 'supabase' })
-        if (!token) throw new Error('No auth token')
+  // Display error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-ga-black pt-20">
+        <div className="container mx-auto px-4">
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-400">
+            Error loading dashboard: {error}
+            <button 
+              onClick={fetchDataWithFreshToken}
+              className="ml-4 px-4 py-2 bg-red-500/20 rounded-lg hover:bg-red-500/30 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-        supabase.rest.headers['Authorization'] = `Bearer ${token}`
+  const handleDeletePlan = async (planId) => {
+    if (!confirm('Are you sure you want to delete this plan?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('marketing_plans')
+        .delete()
+        .eq('id', planId)
+        .eq('user_id', user.id);
 
-        const { data: sub, error: subError } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', user.id)
-          .single()
-        
-        if (subError) {
-          console.error('Error fetching subscription:', subError)
-        } else {
-          setSubscription(sub || { plan_type: 'free' })
-        }
-
-        const fetchMarketingPlans = async () => {
-          if (!user) return;
-          
-          try {
-            setIsLoading(true);
-            // First get the active subscription
-            const { data: subscription, error: subError } = await supabase
-              .from('subscriptions')
-              .select('id')
-              .eq('user_id', user.id)
-              .eq('status', 'active')
-              .single();
-
-            if (subError) throw subError;
-
-            if (subscription) {
-              // Then get the marketing plans associated with this subscription
-              const { data: plans, error: plansError } = await supabase
-                .from('marketing_plans')
-                .select('*')
-                .eq('subscription_id', subscription.id);
-
-              if (plansError) throw plansError;
-              setMarketingPlans(plans || []);
-            }
-          } catch (error) {
-            console.error('Error fetching marketing plans:', error);
-            setMarketingPlans([]);
-          } finally {
-            setIsLoading(false);
-          }
-        };
-
-        fetchMarketingPlans();
-      } catch (error) {
-        console.error('Error in fetchData:', error)
-        setSubscription({ plan_type: 'free' })
-      } finally {
-        setIsLoading(false)
-      }
+      if (error) throw error;
+      
+      setMarketingPlans(plans => plans.filter(p => p.id !== planId));
+    } catch (error) {
+      console.error('Error deleting plan:', error);
     }
+  };
 
-    fetchData()
-  }, [user, supabase, getToken])
+  const handleViewPlan = (planId) => {
+    setExpandedPlanId(expandedPlanId === planId ? null : planId);
+  };
 
   if (isLoading && !subscription) {
     return (
@@ -108,10 +134,10 @@ export function DashboardPage() {
           <p className="text-ga-white">Loading subscription details...</p>
         </div>
       </div>
-    )
+    );
   }
 
-  const tierInfo = SUBSCRIPTION_TIERS[subscription?.plan_type || 'free']
+  const tierInfo = SUBSCRIPTION_TIERS[subscription?.plan_type || 'free'];
 
   return (
     <div className="min-h-screen bg-ga-black pt-20">
@@ -208,15 +234,30 @@ export function DashboardPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-ga-black/30 border border-ga-white/10 rounded-lg p-4 hover:border-ga-white/20 transition-all"
+                  className={`bg-ga-black/30 border border-ga-white/10 rounded-lg p-4 hover:border-ga-white/20 transition-all ${expandedPlanId === plan.id ? 'expanded' : ''}`}
                 >
-                  <h3 className="text-lg font-semibold text-ga-white mb-2">{plan.title}</h3>
-                  <p className="text-ga-white/70 mb-4">{plan.content}</p>
+                  <h3 className="text-lg font-semibold text-ga-white mb-2">{plan.business_idea}</h3>
+                  <div className="text-ga-white/70 mb-4 space-y-2">
+                    <p><span className="font-medium">Target Market:</span> {plan.target_market}</p>
+                    <p><span className="font-medium">Stage:</span> {plan.current_stage}</p>
+                    <p><span className="font-medium">Goals:</span> {plan.marketing_goals}</p>
+                  </div>
+                  {expandedPlanId === plan.id && (
+                    <div className="text-ga-white/70 mb-4">
+                      <p><span className="font-medium">Full Plan:</span> {JSON.stringify(plan.generated_plan, null, 2)}</p>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-ga-white/50">
                       Created: {new Date(plan.created_at).toLocaleDateString()}
                     </span>
                     <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleViewPlan(plan.id)}
+                        className="text-ga-white/70 hover:text-ga-white transition-colors"
+                      >
+                        {expandedPlanId === plan.id ? 'Collapse' : 'View Full Plan'}
+                      </button>
                       <button 
                         onClick={() => handleDeletePlan(plan.id)}
                         className="text-red-400 hover:text-red-300 transition-colors"
@@ -242,5 +283,7 @@ export function DashboardPage() {
         </motion.div>
       </div>
     </div>
-  )
+  );
 }
+
+export default DashboardPage;

@@ -4,6 +4,8 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import { Header } from './components/Header';
 import { AppRoutes } from './AppRoutes';
 import { Toaster } from 'sonner';
+import CookieConsent from './components/CookieConsent';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const PageLoader = () => (
   <div className="min-h-screen bg-ga-black flex items-center justify-center">
@@ -18,15 +20,18 @@ function App() {
   const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
   return (
-    <ClerkProvider publishableKey={clerkPubKey}>
-      <BrowserRouter>
-        <Header />
-        <Suspense fallback={<PageLoader />}>
-          <AppRoutes />
-        </Suspense>
-        <Toaster />
-      </BrowserRouter>
-    </ClerkProvider>
+    <ErrorBoundary>
+      <ClerkProvider publishableKey={clerkPubKey}>
+        <BrowserRouter>
+          <Header />
+          <Suspense fallback={<PageLoader />}>
+            <AppRoutes />
+          </Suspense>
+          <Toaster />
+          <CookieConsent />
+        </BrowserRouter>
+      </ClerkProvider>
+    </ErrorBoundary>
   );
 }
 

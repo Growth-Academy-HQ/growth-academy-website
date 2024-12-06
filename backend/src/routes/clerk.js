@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const rateLimiters = require('../middleware/rateLimiter');
 const { createFreeSubscription } = require('../controllers/subscriptionController');
 const { Webhook } = require('svix');
 
@@ -57,6 +58,21 @@ router.post('/webhooks', express.raw({ type: 'application/json' }), async (req, 
       error: error.message,
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
+  }
+});
+
+router.post('/generate-plan', async (req, res) => {
+  try {
+    const subscription = req.subscription; // Assuming you have this from Clerk
+    const limiter = rateLimiters[subscription?.plan_type || 'free'];
+    
+    limiter(req, res, async () => {
+      // Your existing route handler code
+      res.json({ success: true });
+    });
+  } catch (error) {
+    console.error('API error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

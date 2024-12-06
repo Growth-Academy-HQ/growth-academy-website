@@ -6,6 +6,14 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 const CaseStudyTemplate = ({ caseStudy }) => {
+  if (!caseStudy) {
+    return (
+      <div className="bg-ga-black text-ga-white min-h-screen flex items-center justify-center">
+        <div>Loading case study...</div>
+      </div>
+    );
+  }
+
   const [showShareModal, setShowShareModal] = useState(false);
   const currentUrl = window.location.href;
 
@@ -91,8 +99,10 @@ const CaseStudyTemplate = ({ caseStudy }) => {
     doc.setFontSize(16);
     doc.text('The Results', 20, 20);
     
-    doc.setFontSize(10);
-    const resultsLines = doc.splitTextToSize(caseStudy.results.replace(/<[^>]+>/g, ''), 170);
+    const resultsText = `${caseStudy.results.summary}\n\n${caseStudy.results.bullets
+      .map(bullet => `• ${bullet.metric}: ${bullet.description}`)
+      .join('\n')}`;
+    const resultsLines = doc.splitTextToSize(resultsText, 170);
     doc.text(resultsLines, 20, 30);
 
     // Timeline

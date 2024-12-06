@@ -5,7 +5,7 @@ import { SignIn } from './components/auth/SignIn';
 import { SignUp } from './components/auth/SignUp';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import Footer from './components/Footer';
-import { DashboardPage } from './pages/DashboardPage'
+import { DashboardPage } from './pages/DashboardPage';
 
 // Lazy load pages
 const HomePage = React.lazy(() => import('./pages/HomePage'));
@@ -14,11 +14,11 @@ const CaseStudiesPage = React.lazy(() => import('./pages/CaseStudiesPage'));
 const ShopPage = React.lazy(() => import('./pages/ShopPage'));
 const ContactPage = React.lazy(() => import('./pages/ContactPage'));
 const GrowthAIPage = React.lazy(() => import('./pages/GrowthAIPage'));
-const CaseStudyTemplate = React.lazy(() => import('./components/case-studies/CaseStudyTemplate'));
+const CaseStudy = React.lazy(() => import('./pages/CaseStudy'));
 const PricingPage = React.lazy(() => import('./pages/PricingPage'));
-
-// Import case studies data
-import { dropboxCaseStudy, airbnbCaseStudy, linkedinCaseStudy } from './data/case-studies';
+const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
+const TermsAndConditions = React.lazy(() => import('./pages/TermsAndConditions'));
+const RefundPolicy = React.lazy(() => import('./pages/RefundPolicy'));
 
 export function AppRoutes() {
   return (
@@ -35,20 +35,12 @@ export function AppRoutes() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/growth-ai" element={<GrowthAIPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
         
         {/* Case study routes */}
-        <Route 
-          path="/case-studies/dropbox" 
-          element={<CaseStudyTemplate {...dropboxCaseStudy} />} 
-        />
-        <Route 
-          path="/case-studies/airbnb" 
-          element={<CaseStudyTemplate {...airbnbCaseStudy} />} 
-        />
-        <Route 
-          path="/case-studies/linkedin" 
-          element={<CaseStudyTemplate {...linkedinCaseStudy} />} 
-        />
+        <Route path="/case-studies/:id" element={<CaseStudy />} />
 
         {/* Protected routes */}
         <Route path="/dashboard" element={
