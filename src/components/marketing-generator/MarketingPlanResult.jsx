@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -6,9 +6,61 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Download, Share2, FileText, BarChart2, PieChart, Loader2 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { toast } from 'sonner';
+import { useClerkSupabaseClient } from '@/utils/supabase';
+import { useUser } from '@clerk/clerk-react';
 
 const MarketingPlanResult = ({ plan, inputs, onBack }) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isSaving, setIsSaving] = useState(true);
+  const supabase = useClerkSupabaseClient();
+  const { user } = useUser();
+
+  useEffect(() => {
+    const savePlanToSupabase = async () => {
+      try {
+        const planData = {
+          user_id: user.id,
+          plan_name: inputs.planName,
+          business_idea: inputs.businessIdea,
+          target_market: inputs.targetMarket,
+          current_stage: inputs.currentStage,
+          marketing_goals: inputs.marketingGoals,
+          budget: inputs.budget,
+          generated_plan: {
+            content: plan.content[0],
+            timestamp: new Date().toISOString(),
+            model: plan.model || 'claude-3',
+          },
+          created_at: new Date().toISOString()
+        };
+
+        const { error } = await supabase
+          .from('marketing_plans')
+          .insert([planData]);
+
+        if (error) {
+          console.error('Error saving plan:', error);
+          toast.error('Error saving plan', {
+            description: "Your plan was generated but couldn't be saved. You can still download it."
+          });
+        } else {
+          toast.success('Plan saved successfully', {
+            description: "You can find it in your dashboard"
+          });
+        }
+      } catch (error) {
+        console.error('Failed to save plan:', error);
+        toast.error('Error saving plan', {
+          description: "Your plan was generated but couldn't be saved. You can still download it."
+        });
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    savePlanToSupabase();
+  }, [user, inputs, plan, supabase]);
 
   const sections = [
     { title: 'Executive Summary', content: plan.content[0].text.match(/1\.\s*Executive Summary([\s\S]*?)2\./)?.[1]?.trim() },
@@ -183,7 +235,15 @@ const MarketingPlanResult = ({ plan, inputs, onBack }) => {
             </Button>
             <div>
               <h1 className="text-2xl font-alata text-ga-white">{inputs.planName}</h1>
-              <p className="text-sm text-ga-light">Marketing Plan</p>
+              <p className="text-sm text-ga-light">
+                Marketing Plan
+                {isSaving && (
+                  <span className="ml-2 text-ga-light/70">
+                    <Loader2 className="w-3 h-3 inline animate-spin mr-1" />
+                    Saving...
+                  </span>
+                )}
+              </p>
             </div>
           </div>
           <div className="flex gap-2">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { useAuth, useUser } from '@clerk/clerk-react';
@@ -13,7 +13,7 @@ const MarketingPlanGenerator = () => {
   const { getToken } = useAuth();
   const { user } = useUser();
   const supabase = useClerkSupabaseClient();
-  const { currentPlan } = useSubscriptions();
+  const { currentPlan, usageCount, remainingGenerations, planLimit } = useSubscriptions();
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
@@ -28,6 +28,18 @@ const MarketingPlanGenerator = () => {
   });
   const [generatedPlan, setGeneratedPlan] = useState(null);
 
+  useEffect(() => {
+    if (!user) {
+      setError('Please sign in to continue');
+      return;
+    }
+
+    if (!currentPlan === 'free') {
+      setError('Please upgrade to a paid plan to use this feature');
+      return;
+    }
+  }, [user, currentPlan]);
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -36,75 +48,84 @@ const MarketingPlanGenerator = () => {
   };
 
   const handleGenerate = async () => {
+    if (remainingGenerations <= 0) {
+      setError(`You've reached your ${currentPlan} plan limit for this month. Please upgrade to generate more plans.`);
+      return;
+    }
+
     setIsGenerating(true);
     setError(null);
+    setProgress(0);
     
     const progressInterval = setInterval(() => {
       setProgress(prev => Math.min(prev + 1, 95));
     }, 500);
   
-    const sanitizedData = {
-      planName: sanitizeInput(formData.planName),
-      businessIdea: sanitizeInput(formData.businessIdea),
-      targetMarket: sanitizeInput(formData.targetMarket),
-      currentStage: sanitizeInput(formData.currentStage),
-      marketingGoals: sanitizeInput(formData.marketingGoals),
-      budget: sanitizeInput(formData.budget),
-    };
-  
     try {
-      // Get fresh token for AI request
-      const aiToken = await refreshSupabaseToken();
-      
+      // Validate inputs
+      const validationErrors = validateData(formData, validationRules.marketingPlan);
+      if (validationErrors.length > 0) {
+        throw new Error(validationErrors[0].message);
+      }
+
+      // Get fresh token
+      const token = await getToken({ template: 'supabase' });
+      if (!token) {
+        throw new Error('Failed to get authentication token');
+      }
+
       // Generate the plan
-      const generatedResponse = await generateMarketingPlan(sanitizedData, aiToken, currentPlan);
+      console.log('Generating marketing plan...');
+      const generatedResponse = await generateMarketingPlan(
+        formData,
+        token,
+        currentPlan
+      );
 
-      // Get another fresh token for Supabase save
-      const supabaseToken = await refreshSupabaseToken();
+      if (!generatedResponse?.content) {
+        throw new Error('Invalid response from AI service');
+      }
 
-      // Update Supabase client with fresh token
-      await supabase.auth.setSession({
-        access_token: supabaseToken,
-        refresh_token: null
-      });
+      // Save to Supabase
+      try {
+        const planData = {
+          user_id: user.id,
+          plan_name: formData.planName,
+          business_idea: formData.businessIdea,
+          target_market: formData.targetMarket,
+          current_stage: formData.currentStage,
+          marketing_goals: formData.marketingGoals,
+          budget: formData.budget,
+          generated_plan: {
+            content: generatedResponse.content[0],
+            timestamp: new Date().toISOString(),
+            model: generatedResponse.model || 'claude-3',
+          },
+          created_at: new Date().toISOString()
+        };
 
-      const planData = {
-        user_id: user.id,
-        business_idea: formData.businessIdea,
-        target_market: formData.targetMarket,
-        current_stage: formData.currentStage,
-        marketing_goals: formData.marketingGoals,
-        budget: formData.budget,
-        plan_name: formData.planName || 'Winter Campaign',
-        generated_plan: {
-          content: generatedResponse.content[0],
-          timestamp: new Date().toISOString(),
-          version: '1.0'
+        const { error: saveError } = await supabase
+          .from('marketing_plans')
+          .insert([planData]);
+
+        if (saveError) {
+          console.error('Error saving to Supabase:', saveError);
+          // Continue showing results even if save fails
+        } else {
+          console.log('Plan saved successfully to Supabase');
         }
-      };
-
-      // Save to Supabase with fresh token
-      const { data: savedPlan, error: saveError } = await supabase
-        .from('marketing_plans')
-        .insert(planData)
-        .select()
-        .single();
-
-      if (saveError) {
-        throw new Error(`Failed to save plan: ${saveError.message}`);
+      } catch (saveError) {
+        console.error('Failed to save plan:', saveError);
+        // Continue showing results even if save fails
       }
 
       setGeneratedPlan(generatedResponse);
       setShowResults(true);
+      setProgress(100);
 
     } catch (error) {
-      console.error('Full error:', error);
-      setError(error.message || 'Failed to generate or save plan');
-      
-      // If it's a token error, provide a retry button
-      if (error.message.includes('JWT') || error.message.includes('401')) {
-        setError('Session expired. Please try again.');
-      }
+      console.error('Generation error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to generate plan');
     } finally {
       clearInterval(progressInterval);
       setIsGenerating(false);
@@ -142,6 +163,17 @@ const MarketingPlanGenerator = () => {
               <p className="text-ga-white/70 mt-2">
                 Create your custom marketing strategy in minutes
               </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-8 py-4 border-b border-ga-white/10 bg-ga-black/30">
+          <div className="flex justify-between items-center">
+            <div className="text-ga-white/70">
+              <span className="font-medium">{remainingGenerations}</span> of {planLimit} generations remaining this month
+            </div>
+            <div className="text-ga-white/70">
+              Plan: <span className="font-medium capitalize">{currentPlan}</span>
             </div>
           </div>
         </div>

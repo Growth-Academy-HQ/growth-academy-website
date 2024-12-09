@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useUser, useAuth } from "@clerk/clerk-react";
-import { useClerkSupabaseClient } from '../utils/supabase';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useSubscriptions } from '../utils/subscriptions';
+import { createClient } from '@supabase/supabase-js';
 
 const SUBSCRIPTION_TIERS = {
   free: {
@@ -26,84 +27,55 @@ export function DashboardPage() {
   const { user } = useUser();
   const { getToken } = useAuth();
   const [marketingPlans, setMarketingPlans] = useState([]);
-  const [subscription, setSubscription] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const supabase = useClerkSupabaseClient();
+  const [expandedPlanId, setExpandedPlanId] = useState(null);
+  const { currentPlan } = useSubscriptions();
+  
+  const supabase = createClient(
+    import.meta.env.VITE_SUPABASE_URL,
+    import.meta.env.VITE_SUPABASE_ANON_KEY
+  );
 
-  const fetchDataWithFreshToken = async () => {
+  const fetchMarketingPlans = async () => {
+    if (!user) return;
+
     try {
-      setIsLoading(true);
-      setError(null);
-      
-      // Get fresh token
-      const token = await refreshSupabaseToken();
-      
-      // Update Supabase client with fresh token
-      await supabase.auth.setSession({
+      const token = await getToken({ template: 'supabase' });
+      if (!token) {
+        console.error('No auth token available');
+        return;
+      }
+
+      supabase.auth.setSession({
         access_token: token,
-        refresh_token: null
+        refresh_token: ''
       });
 
-      // Fetch subscription
-      const { data: sub, error: subError } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (subError) {
-        console.error('Error fetching subscription:', subError);
-        throw subError;
-      }
-      
-      setSubscription(sub || { plan_type: 'free' });
-
-      // Fetch marketing plans
-      const { data: plans, error: plansError } = await supabase
+      const { data, error } = await supabase
         .from('marketing_plans')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (plansError) {
-        throw plansError;
+      if (error) {
+        console.error('Error fetching marketing plans:', error);
+        return;
       }
 
-      setMarketingPlans(plans || []);
+      setMarketingPlans(data || []);
     } catch (error) {
-      console.error('Error fetching data:', error);
-      setError(error.message);
-      setSubscription({ plan_type: 'free' });
-      setMarketingPlans([]);
+      console.error('Error in fetchMarketingPlans:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!user || !supabase) return;
-    fetchDataWithFreshToken();
-  }, [user, supabase]);
-
-  // Display error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-ga-black pt-20">
-        <div className="container mx-auto px-4">
-          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-400">
-            Error loading dashboard: {error}
-            <button 
-              onClick={fetchDataWithFreshToken}
-              className="ml-4 px-4 py-2 bg-red-500/20 rounded-lg hover:bg-red-500/30 transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    if (user) {
+      fetchMarketingPlans();
+    }
+  }, [user]);
 
   const handleDeletePlan = async (planId) => {
     if (!confirm('Are you sure you want to delete this plan?')) return;
@@ -127,7 +99,30 @@ export function DashboardPage() {
     setExpandedPlanId(expandedPlanId === planId ? null : planId);
   };
 
-  if (isLoading && !subscription) {
+  useEffect(() => {
+    const testSupabase = async () => {
+      const supabaseTest = createClient(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_ANON_KEY
+      )
+
+      const { data, error } = await supabaseTest
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+
+      console.log('Test Query Results:')
+      console.log('Data:', data)
+      console.log('Error:', error)
+    }
+
+    if (user) {
+      testSupabase()
+    }
+  }, [user])
+
+  if (isLoading && !currentPlan) {
     return (
       <div className="min-h-screen bg-ga-black pt-20">
         <div className="container mx-auto px-4">
@@ -137,7 +132,7 @@ export function DashboardPage() {
     );
   }
 
-  const tierInfo = SUBSCRIPTION_TIERS[subscription?.plan_type || 'free'];
+  const tierInfo = SUBSCRIPTION_TIERS[currentPlan || 'free'];
 
   return (
     <div className="min-h-screen bg-ga-black pt-20">
@@ -179,7 +174,7 @@ export function DashboardPage() {
                 ))}
               </ul>
             </div>
-            {subscription?.plan_type !== 'expert' && (
+            {currentPlan !== 'expert' && (
               <Link
                 to="/pricing"
                 className="px-4 py-2 bg-ga-white text-ga-black rounded-lg hover:bg-ga-white/90 transition-colors"
@@ -211,8 +206,8 @@ export function DashboardPage() {
             <h3 className="text-lg font-semibold text-ga-white mb-2">Your Stats</h3>
             <p className="text-ga-white/70">Plans Generated: {marketingPlans.length}</p>
             <p className="text-ga-white/70">
-              Plans Remaining: {subscription?.plan_type === 'expert' ? (30 - marketingPlans.length) : 
-                subscription?.plan_type === 'pro' ? (10 - marketingPlans.length) : 
+              Plans Remaining: {currentPlan === 'expert' ? (30 - marketingPlans.length) : 
+                currentPlan === 'pro' ? (10 - marketingPlans.length) : 
                 (1 - marketingPlans.length)}
             </p>
           </div>

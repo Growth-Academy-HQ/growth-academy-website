@@ -1,49 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { useUser, useAuth } from "@clerk/clerk-react";
-import { useClerkSupabaseClient } from '../utils/supabase';
+import { useUser } from "@clerk/clerk-react";
 import MarketingPlanGenerator from '../components/marketing-generator/MarketingPlanGenerator';
 import { WelcomeModal } from '../components/WelcomeModal';
+import { useSubscriptions } from '../utils/subscriptions';
+
 const GrowthAIPage = () => {
   const { user } = useUser();
-  const { getToken } = useAuth();
-  const [subscription, setSubscription] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
-  const supabase = useClerkSupabaseClient();
-  useEffect(() => {
-    // Show welcome modal for non-authenticated users
-    if (!user) {
-      setShowWelcomeModal(true);
-      return;
-    }
-    const checkSubscription = async () => {
-      if (!user || !supabase) return;
-      try {
-        // Get fresh token
-        const token = await getToken({ template: 'supabase' });
-        if (!token) throw new Error('No auth token');
-        // Set auth header
-        supabase.rest.headers['Authorization'] = `Bearer ${token}`;
-        const { data, error } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-        if (error) {
-          console.error('Error fetching subscription:', error);
-        } else {
-          setSubscription(data);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    checkSubscription();
-  }, [user, supabase, getToken]);
+  const { currentPlan, isLoading } = useSubscriptions();
+  const [showWelcomeModal, setShowWelcomeModal] = useState(!user);
+
   // Show welcome modal for non-authenticated users
   if (!user) {
     return (
@@ -53,6 +20,7 @@ const GrowthAIPage = () => {
       />
     );
   }
+
   // Show loading state
   if (isLoading) {
     return (
@@ -63,14 +31,16 @@ const GrowthAIPage = () => {
       </div>
     );
   }
+
   // Show Marketing Plan Generator for:
   // 1. Pro/Expert subscribers
   // 2. Free users who haven't used their one-time access
   // 3. Users with existing marketing plans
   const canAccessGenerator = 
-    subscription?.plan_type === 'pro' || 
-    subscription?.plan_type === 'expert' ||
-    subscription?.plan_type === 'free';
+    currentPlan === 'pro' || 
+    currentPlan === 'expert' ||
+    currentPlan === 'free';
+
   if (!canAccessGenerator) {
     return (
       <motion.div
@@ -106,6 +76,7 @@ const GrowthAIPage = () => {
       </motion.div>
     );
   }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -125,7 +96,7 @@ const GrowthAIPage = () => {
           <h1 className="text-4xl font-alata">
             Marketing Plan Generator
           </h1>
-          {subscription?.plan_type === 'free' ? (
+          {currentPlan === 'free' ? (
             <p className="text-ga-light text-lg">
               You have one free marketing plan generation available. Make it count!
             </p>
@@ -137,9 +108,9 @@ const GrowthAIPage = () => {
           {/* Usage Stats */}
           <div className="mt-6 p-4 bg-ga-black/30 rounded-lg inline-block">
             <p className="text-sm text-ga-light">
-              {subscription?.plan_type === 'pro' ? (
+              {currentPlan === 'pro' ? (
                 'Pro Plan: 10 generations remaining this month'
-              ) : subscription?.plan_type === 'expert' ? (
+              ) : currentPlan === 'expert' ? (
                 'Expert Plan: 30 generations remaining this month'
               ) : (
                 'Free Plan: 1 generation available'
@@ -148,6 +119,7 @@ const GrowthAIPage = () => {
           </div>
         </motion.div>
       </section>
+
       {/* Generator Interface */}
       <motion.section 
         initial={{ y: 20, opacity: 0 }}
@@ -158,7 +130,7 @@ const GrowthAIPage = () => {
         <div className="max-w-4xl mx-auto">
           <div className="bg-ga-black/30 border border-ga-white/10 rounded-xl p-8 backdrop-blur-sm">
             <MarketingPlanGenerator 
-              subscription={subscription}
+              subscription={{ plan_type: currentPlan }}
               className="w-full"
             />
           </div>
@@ -187,4 +159,5 @@ const GrowthAIPage = () => {
     </motion.div>
   );
 };
+
 export default GrowthAIPage;

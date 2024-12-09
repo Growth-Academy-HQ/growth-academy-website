@@ -3,46 +3,63 @@ import { stripePromise } from './stripe'
 import { useClerkSupabaseClient } from './supabase'
 import { useUser, useAuth } from '@clerk/clerk-react'
 
+const PLAN_LIMITS = {
+  free: 1,
+  pro: 10,
+  expert: 30
+}
+
 export function useSubscriptions() {
   const supabase = useClerkSupabaseClient()
-  const { user } = useUser()
-  const { getToken } = useAuth()
+  const { user, isLoaded: isUserLoaded } = useUser()
   const [currentPlan, setCurrentPlan] = useState(null)
+  const [usageCount, setUsageCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchSubscriptionStatus = async () => {
-      if (!user) return
+    const fetchSubscriptionAndUsage = async () => {
+      if (!isUserLoaded || !user || !supabase) {
+        setIsLoading(false)
+        return
+      }
 
       try {
-        setIsLoading(true)
-        
-        // Get the Supabase token from Clerk
-        const token = await getToken({ template: 'supabase' })
-        if (!token) throw new Error('No auth token')
-
-        // Set the auth header
-        supabase.rest.headers['Authorization'] = `Bearer ${token}`
-
-        // Query the subscriptions table
-        const { data: subscription, error } = await supabase
+        // Get subscription
+        const { data: subData, error: subError } = await supabase
           .from('subscriptions')
           .select('*')
           .eq('user_id', user.id)
           .eq('status', 'active')
-          .single()
+          .single();
 
-        if (error) {
-          console.error('Error fetching subscription:', error)
+        // Get current month's usage
+        const startOfMonth = new Date()
+        startOfMonth.setDate(1)
+        startOfMonth.setHours(0, 0, 0, 0)
+
+        const { count, error: usageError } = await supabase
+          .from('marketing_plans')
+          .select('*', { count: 'exact' })
+          .eq('user_id', user.id)
+          .gte('created_at', startOfMonth.toISOString())
+
+        if (usageError) {
+          console.error('Usage count error:', usageError)
+        } else {
+          setUsageCount(count || 0)
+        }
+
+        if (subError) {
+          console.error('Subscription error:', subError)
           setCurrentPlan('free')
           return
         }
 
-        // If we have an active subscription, use its plan_type
-        if (subscription) {
-          console.log('Found subscription:', subscription)
-          setCurrentPlan(subscription.plan_type)
+        if (subData) {
+          console.log('Found subscription:', subData)
+          setCurrentPlan(subData.plan_type)
         } else {
+          console.log('No subscription found')
           setCurrentPlan('free')
         }
       } catch (error) {
@@ -53,76 +70,19 @@ export function useSubscriptions() {
       }
     }
 
-    fetchSubscriptionStatus()
-  }, [user, supabase, getToken])
+    fetchSubscriptionAndUsage()
+  }, [user, isUserLoaded, supabase])
 
-  const getCurrentSubscription = async () => {
-    if (!user) return null
-
-    try {
-      const token = await getToken({ template: 'supabase' })
-      if (!token) throw new Error('No auth token')
-
-      supabase.rest.headers['Authorization'] = `Bearer ${token}`
-
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .single()
-
-      if (error) throw error
-      return data
-    } catch (error) {
-      console.error('Error fetching subscription:', error)
-      return null
-    }
-  }
-
-  const createCheckoutSession = async (priceId) => {
-    if (!user) return
-
-    setIsLoading(true)
-    try {
-      const stripe = await stripePromise
-
-      const response = await fetch('/api/stripe/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          priceId,
-          userId: user.id,
-          customerEmail: user.emailAddresses[0]?.emailAddress,
-          currentPlan
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok')
-      }
-
-      const { sessionId } = await response.json()
-      
-      const { error } = await stripe.redirectToCheckout({
-        sessionId,
-      })
-
-      if (error) throw error
-    } catch (error) {
-      console.error('Error:', error)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
+  const getRemainingGenerations = () => {
+    const limit = PLAN_LIMITS[currentPlan || 'free']
+    return Math.max(0, limit - usageCount)
   }
 
   return {
-    createCheckoutSession,
-    getCurrentSubscription,
     currentPlan,
-    isLoading
+    isLoading,
+    usageCount,
+    remainingGenerations: getRemainingGenerations(),
+    planLimit: PLAN_LIMITS[currentPlan || 'free']
   }
 }
