@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { stripePromise } from './stripe'
 import { useClerkSupabaseClient } from './supabase'
 import { useUser, useAuth } from '@clerk/clerk-react'
 
@@ -9,6 +8,18 @@ const PLAN_LIMITS = {
   expert: 30
 }
 
+/**
+ * @typedef {Object} SubscriptionData
+ * @property {('free'|'pro'|'expert'|null)} currentPlan
+ * @property {boolean} isLoading
+ * @property {number} usageCount
+ * @property {number} remainingGenerations
+ * @property {number} planLimit
+ */
+
+/**
+ * @returns {SubscriptionData}
+ */
 export function useSubscriptions() {
   const supabase = useClerkSupabaseClient()
   const { user, isLoaded: isUserLoaded } = useUser()
@@ -31,6 +42,9 @@ export function useSubscriptions() {
           .eq('user_id', user.id)
           .eq('status', 'active')
           .single();
+
+        console.log('Subscription Data:', subData);
+        console.log('Subscription Error:', subError);
 
         // Get current month's usage
         const startOfMonth = new Date()
@@ -56,10 +70,10 @@ export function useSubscriptions() {
         }
 
         if (subData) {
-          console.log('Found subscription:', subData)
+          console.log('Setting current plan to:', subData.plan_type);
           setCurrentPlan(subData.plan_type)
         } else {
-          console.log('No subscription found')
+          console.log('No subscription found, setting to free')
           setCurrentPlan('free')
         }
       } catch (error) {
@@ -72,6 +86,8 @@ export function useSubscriptions() {
 
     fetchSubscriptionAndUsage()
   }, [user, isUserLoaded, supabase])
+
+  console.log('Current Plan State:', currentPlan);
 
   const getRemainingGenerations = () => {
     const limit = PLAN_LIMITS[currentPlan || 'free']

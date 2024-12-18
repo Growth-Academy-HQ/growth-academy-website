@@ -210,7 +210,11 @@ export function DashboardPage() {
             <h3 className="text-lg font-semibold text-ga-white mb-2 group-hover:text-ga-white/90">
               Schedule a Meeting
             </h3>
-            <p className="text-ga-white/70">Book a consultation with our experts</p>
+            <p className="text-ga-white/70">
+              {currentPlan === "Growth Pro" 
+                ? "Book your monthly consultation" 
+                : "Book your VIP consultation"}
+            </p>
           </Link>
           
           <div className="p-6 bg-ga-black/50 border border-ga-white/10 rounded-lg">

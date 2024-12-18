@@ -6,7 +6,6 @@ const stripeRoutes = require('./routes/stripe');
 const clerkRoutes = require('./routes/clerk');
 const rateLimiters = require('./middleware/rateLimiter');
 const validateAuth = require('./middleware/auth');
-const { scheduleMeeting } = require('./routes/meetings');
 const { ClerkExpressWithAuth } = require('@clerk/clerk-sdk-node');
 
 const app = express();
@@ -171,8 +170,6 @@ app.get('/api/test-auth', ClerkExpressWithAuth(), (req, res) => {
     userId: req.auth.userId 
   });
 });
-
-app.post('/api/schedule-meeting', ClerkExpressWithAuth(), scheduleMeeting);
 
 // Error handling middleware
 app.use(function(err, req, res, next) {
