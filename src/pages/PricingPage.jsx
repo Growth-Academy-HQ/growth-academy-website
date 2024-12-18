@@ -123,10 +123,6 @@ export function PricingPage() {
                 <span>1 generation per month</span>
               </li>
               <li className="flex items-center text-ga-white/70">
-                <Clock className="w-5 h-5 mr-3 text-ga-white/50" />
-                <span>15-minute intro call with expert</span>
-              </li>
-              <li className="flex items-center text-ga-white/70">
                 <BookOpen className="w-5 h-5 mr-3 text-ga-white/50" />
                 <span>Newsletter access</span>
               </li>
@@ -183,15 +179,15 @@ export function PricingPage() {
             <ul className="space-y-4 mb-8">
               <li className="flex items-center text-ga-white/70">
                 <Zap className="w-5 h-5 mr-3 text-ga-white/50" />
-                <span>10 generations per month</span>
+                <span>10 AI Marketing Plan generations</span>
               </li>
               <li className="flex items-center text-ga-white/70">
                 <Phone className="w-5 h-5 mr-3 text-ga-white/50" />
-                <span>2x 30-minute expert calls</span>
+                <span>Monthly 30-min consultation with marketing expert</span>
               </li>
               <li className="flex items-center text-ga-white/70">
                 <BookOpen className="w-5 h-5 mr-3 text-ga-white/50" />
-                <span>E-books & resource templates</span>
+                <span>Premium Resources (E-books, templates, etc.)</span>
               </li>
               <li className="flex items-center text-ga-white/70">
                 <Star className="w-5 h-5 mr-3 text-ga-white/50" />
@@ -199,7 +195,7 @@ export function PricingPage() {
               </li>
               <li className="flex items-center text-ga-white/70">
                 <Mail className="w-5 h-5 mr-3 text-ga-white/50" />
-                <span>Email Support</span>
+                <span>Priority Email Support</span>
               </li>
             </ul>
             <button 
@@ -221,23 +217,19 @@ export function PricingPage() {
             <ul className="space-y-4 mb-8">
               <li className="flex items-center text-ga-white/70">
                 <Zap className="w-5 h-5 mr-3 text-ga-white/50" />
-                <span>30 generations per month</span>
+                <span>20 AI Marketing Plans</span> 
               </li>
               <li className="flex items-center text-ga-white/70">
                 <Phone className="w-5 h-5 mr-3 text-ga-white/50" />
-                <span>Monthly expert consultation</span>
-              </li>
-              <li className="flex items-center text-ga-white/70">
-                <Star className="w-5 h-5 mr-3 text-ga-white/50" />
-                <span>Early-access to resources</span>
+                <span>Monthly VIP Consultation with Marketing Expert</span>
               </li>
               <li className="flex items-center text-ga-white/70">
                 <Mail className="w-5 h-5 mr-3 text-ga-white/50" />
-                <span>Priority email support</span>
+                <span>VIP support (Email, Direct Messaging)</span>
               </li>
               <li className="flex items-center text-ga-white/70">
                 <Check className="w-5 h-5 mr-3 text-ga-white/50" />
-                <span>All Pro features included</span>
+                <span>All Pro features, Plus expert benefits</span>
               </li>
             </ul>
             <button 

@@ -4,22 +4,23 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useSubscriptions } from '../utils/subscriptions';
 import { createClient } from '@supabase/supabase-js';
+import { SchedulerForm } from '../components/scheduler';
 
 const SUBSCRIPTION_TIERS = {
   free: {
     name: 'Growth Starter',
     color: 'bg-blue-500',
-    features: ['A one time use of our Marketing Plan Generator', '15-minute call with Marketing Expert', 'Email Support', 'Access to our newsletter']
+    features: ['1 AI Marketing Plan Generation per month', 'Monthly newsletter access', 'Email Support']
   },
   pro: {
     name: 'Growth Pro',
     color: 'bg-purple-500',
-    features: ['10 uses per month of our Marketing Plan Generator', '30-minute call with Marketing Expert', 'Email Support', 'Access to valuable e-books related to growth strategies']
+    features: ['10 AI Marketing Plan Generations per month', 'Monthly 30-minute call with Marketing Expert', 'Premium Resources', 'Newsletter Access', 'Priority Email Support']
   },
   expert: {
     name: 'Growth Expert',
     color: 'bg-amber-500',
-    features: ['Everything in Growth Pro', '30 uses per month of our Marketing Plan Generator', '1 monthly call with Marketing Expert', 'Priority Email Support', 'Early access to new resources and templates']
+    features: ['All Pro features, plus expert benefits', '20 AI Marketing Plan Generations per month', 'Monthly VIP Consultation with Marketing Expert', 'VIP Support (Email, Direct Messaging)']
   }
 };
 
@@ -202,6 +203,16 @@ export function DashboardPage() {
             <p className="text-ga-white/70">Create a new marketing plan with AI</p>
           </Link>
           
+          <Link 
+            to="/scheduler"
+            className="p-6 bg-ga-black/50 border border-ga-white/10 rounded-lg hover:border-ga-white/20 transition-all group"
+          >
+            <h3 className="text-lg font-semibold text-ga-white mb-2 group-hover:text-ga-white/90">
+              Schedule a Meeting
+            </h3>
+            <p className="text-ga-white/70">Book a consultation with our experts</p>
+          </Link>
+          
           <div className="p-6 bg-ga-black/50 border border-ga-white/10 rounded-lg">
             <h3 className="text-lg font-semibold text-ga-white mb-2">Your Stats</h3>
             <p className="text-ga-white/70">Plans Generated: {marketingPlans.length}</p>
@@ -217,7 +228,7 @@ export function DashboardPage() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.4 }}
           className="bg-ga-black/50 border border-ga-white/10 rounded-lg p-6"
         >
           <h2 className="text-xl font-bold text-ga-white mb-4">Your Marketing Plans</h2>

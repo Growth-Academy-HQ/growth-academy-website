@@ -6,6 +6,8 @@ const stripeRoutes = require('./routes/stripe');
 const clerkRoutes = require('./routes/clerk');
 const rateLimiters = require('./middleware/rateLimiter');
 const validateAuth = require('./middleware/auth');
+const { scheduleMeeting } = require('./routes/meetings');
+const { ClerkExpressWithAuth } = require('@clerk/clerk-sdk-node');
 
 const app = express();
 const port = 3001;
@@ -14,7 +16,9 @@ const port = 3001;
 console.log('Environment Check:', { 
   stripeKey: process.env.STRIPE_SECRET_KEY ? 'Present' : 'Missing',
   webhookSecret: process.env.STRIPE_WEBHOOK_SECRET ? 'Present' : 'Missing',
-  anthropicKey: process.env.ANTHROPIC_API_KEY ? 'Present' : 'Missing'
+  anthropicKey: process.env.ANTHROPIC_API_KEY ? 'Present' : 'Missing',
+  clerkPublishable: process.env.CLERK_PUBLISHABLE_KEY ? 'Present' : 'Missing',
+  clerkSecret: process.env.CLERK_SECRET_KEY ? 'Present' : 'Missing'
 });
 
 // Regular middleware first
@@ -154,6 +158,21 @@ app.post('/api/generate-plan', validateAuth, function(req, res, next) {
 // Add routes
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/clerk', clerkRoutes);
+
+// Test endpoint for Clerk auth
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'API is working' });
+});
+
+app.get('/api/test-auth', ClerkExpressWithAuth(), (req, res) => {
+  console.log('Auth test:', req.auth);
+  res.json({ 
+    message: 'Auth working', 
+    userId: req.auth.userId 
+  });
+});
+
+app.post('/api/schedule-meeting', ClerkExpressWithAuth(), scheduleMeeting);
 
 // Error handling middleware
 app.use(function(err, req, res, next) {
