@@ -58,7 +58,7 @@ interface RateLimitConfig {
   const rateLimits = {
     free: { maxRequests: 1, windowMs: 2592000000 },  // 1 per month
     pro: { maxRequests: 10, windowMs: 2592000000 },  // 10 per month
-    expert: { maxRequests: 30, windowMs: 2592000000 } // 30 per month
+    expert: { maxRequests: 20, windowMs: 2592000000 } // 30 per month
   };
   
   export const getRateLimiterForSubscription = (subscriptionLevel: 'free' | 'pro' | 'expert') => {

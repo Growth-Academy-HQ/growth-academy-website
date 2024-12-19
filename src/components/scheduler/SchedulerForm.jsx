@@ -1,12 +1,6 @@
 import { useEffect } from "react";
 import { useSubscriptions } from "../../utils/subscriptions";
 
-declare global {
-  interface Window {
-    Calendly?: any;
-  }
-}
-
 export function SchedulerForm() {
   const { currentPlan, isLoading } = useSubscriptions();
 

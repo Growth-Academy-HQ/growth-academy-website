@@ -1,12 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useClerkSupabaseClient } from './supabase'
 import { useUser, useAuth } from '@clerk/clerk-react'
+import { loadStripe } from '@stripe/stripe-js';
 
 const PLAN_LIMITS = {
   free: 1,
   pro: 10,
   expert: 30
 }
+
+const PRICE_IDS = {
+  pro: 'price_1QS3WrDx4hYKRW6tovZXvOiB',
+  expert: 'price_1QS3XWDx4hYKRW6tQoxNOwzZ'
+}
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 /**
  * @typedef {Object} SubscriptionData
@@ -15,6 +23,7 @@ const PLAN_LIMITS = {
  * @property {number} usageCount
  * @property {number} remainingGenerations
  * @property {number} planLimit
+ * @property {Function} createCheckoutSession
  */
 
 /**
@@ -23,6 +32,7 @@ const PLAN_LIMITS = {
 export function useSubscriptions() {
   const supabase = useClerkSupabaseClient()
   const { user, isLoaded: isUserLoaded } = useUser()
+  const { getToken } = useAuth()
   const [currentPlan, setCurrentPlan] = useState(null)
   const [usageCount, setUsageCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
@@ -42,9 +52,6 @@ export function useSubscriptions() {
           .eq('user_id', user.id)
           .eq('status', 'active')
           .single();
-
-        console.log('Subscription Data:', subData);
-        console.log('Subscription Error:', subError);
 
         // Get current month's usage
         const startOfMonth = new Date()
@@ -70,10 +77,8 @@ export function useSubscriptions() {
         }
 
         if (subData) {
-          console.log('Setting current plan to:', subData.plan_type);
           setCurrentPlan(subData.plan_type)
         } else {
-          console.log('No subscription found, setting to free')
           setCurrentPlan('free')
         }
       } catch (error) {
@@ -87,7 +92,68 @@ export function useSubscriptions() {
     fetchSubscriptionAndUsage()
   }, [user, isUserLoaded, supabase])
 
-  console.log('Current Plan State:', currentPlan);
+  const createCheckoutSession = async (priceId) => {
+    if (!user) {
+      console.error('No user found');
+      return;
+    }
+
+    try {
+      console.log('Creating checkout session for:', {
+        priceId,
+        userId: user.id,
+        email: user.primaryEmailAddress?.emailAddress
+      });
+
+      const token = await getToken();
+      
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/stripe/create-checkout-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          priceId,
+          userId: user.id,
+          customerEmail: user.primaryEmailAddress?.emailAddress,
+          currentPlan,
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}, message: ${data.error || 'Unknown error'}`);
+      }
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      if (!data.sessionId) {
+        throw new Error('No session ID received from server');
+      }
+
+      console.log('Redirecting to checkout with session:', data.sessionId);
+      
+      const stripe = await stripePromise;
+      if (!stripe) {
+        throw new Error('Stripe not initialized');
+      }
+
+      const { error: stripeError } = await stripe.redirectToCheckout({
+        sessionId: data.sessionId,
+      });
+
+      if (stripeError) {
+        throw new Error(`Stripe redirect error: ${stripeError.message}`);
+      }
+    } catch (error) {
+      console.error('Error in createCheckoutSession:', error);
+      // You might want to show a toast or error message to the user here
+    }
+  };
 
   const getRemainingGenerations = () => {
     const limit = PLAN_LIMITS[currentPlan || 'free']
@@ -99,6 +165,8 @@ export function useSubscriptions() {
     isLoading,
     usageCount,
     remainingGenerations: getRemainingGenerations(),
-    planLimit: PLAN_LIMITS[currentPlan || 'free']
+    planLimit: PLAN_LIMITS[currentPlan || 'free'],
+    createCheckoutSession,
+    PRICE_IDS // Export price IDs for use in PricingPage
   }
 }

@@ -103,7 +103,7 @@ const RefundPolicy = () => {
             <p className="mb-8">
               For any questions or issues regarding this policy or your purchase, please reach out to our support team:
               <ul className="list-none mb-8">
-                <li>Email: contact.growthacademyhq@gmail.com</li>
+                <li>Email: support@growthacademy-hq.com</li>
                 <li>Mailing Address: Baumchulenstrasse 74, Berlin, 12437, Germany</li>
               </ul>
               Our team is available to assist you during business hours (Monday to Friday, 9:00 AM – 5:00 PM CET).

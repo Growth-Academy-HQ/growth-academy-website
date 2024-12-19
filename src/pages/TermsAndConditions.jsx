@@ -141,7 +141,7 @@ const TermsAndConditions = () => {
             <h2 className="text-2xl font-alata mt-12 mb-4">15. Contact Information</h2>
             <p className="mb-4">If you have questions about these Terms, contact us:</p>
             <ul className="list-none mb-8">
-              <li>Email: contact.growthacademyhq@gmail.com</li>
+              <li>Email: support@growthacademy-hq.com</li>
               <li>Mailing Address: Baumchulenstrasse 74, Berlin, 12437, Germany</li>
             </ul>
 

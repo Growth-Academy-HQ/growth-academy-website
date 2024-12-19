@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useSubscriptions } from '../utils/subscriptions';
 import { createClient } from '@supabase/supabase-js';
-import { SchedulerForm } from '../components/scheduler';
+import { ChatInterface } from '../components/chat/ChatInterface';
+import { MessageCircle } from 'lucide-react';
 
 const SUBSCRIPTION_TIERS = {
   free: {
@@ -32,6 +33,7 @@ export function DashboardPage() {
   const [error, setError] = useState(null);
   const [expandedPlanId, setExpandedPlanId] = useState(null);
   const { currentPlan } = useSubscriptions();
+  const [showChat, setShowChat] = useState(false);
   
   const supabase = createClient(
     import.meta.env.VITE_SUPABASE_URL,
@@ -227,6 +229,35 @@ export function DashboardPage() {
             </p>
           </div>
         </motion.div>
+
+        {/* Direct Messaging Section */}
+        {currentPlan === 'expert' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mb-8"
+          >
+            <div className="bg-ga-black/50 border border-ga-white/10 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-ga-white">Direct Messaging</h2>
+                <button
+                  onClick={() => setShowChat(!showChat)}
+                  className="flex items-center gap-2 px-4 py-2 bg-ga-white/10 text-ga-white rounded-lg hover:bg-ga-white/20 transition-colors"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                  {showChat ? 'Hide Chat' : 'Open Chat'}
+                </button>
+              </div>
+              
+              {showChat && (
+                <div className="mt-4 bg-ga-black/30 border border-ga-white/10 rounded-lg overflow-hidden">
+                  <ChatInterface />
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
 
         {/* Marketing Plans */}
         <motion.div 

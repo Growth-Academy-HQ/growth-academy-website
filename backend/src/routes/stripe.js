@@ -10,7 +10,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
-router.post('/create-checkout-session', createCheckoutSession);
+router.post('/api/stripe/create-checkout-session', createCheckoutSession);
 router.post('/webhooks', express.raw({ type: 'application/json' }), async (req, res) => {
   try {
     const sig = req.headers['stripe-signature'];

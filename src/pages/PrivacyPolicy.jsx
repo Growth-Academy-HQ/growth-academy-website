@@ -148,7 +148,7 @@ const PrivacyPolicy = () => {
             <h2 className="text-2xl font-alata mt-12 mb-4">13. Contact Information</h2>
             <p className="mb-4">If you have questions about this Privacy Policy or our data practices, please contact us:</p>
             <ul className="list-none mb-8">
-              <li>Email: contact.growthacademyhq@gmail.com</li>
+              <li>Email: support@growthacademy-hq.com</li>
               <li>Mailing Address: Baumchulenstrasse 74, Berlin, 12437, Germany</li>
             </ul>
 

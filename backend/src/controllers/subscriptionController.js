@@ -44,22 +44,67 @@ const getUserSubscription = async (userId) => {
 };
 
 // Update subscription when user upgrades/downgrades
-const updateSubscription = async (userId, planType, stripeData = {}) => {
+const updateSubscription = async (userId, planType, details) => {
   try {
-    const { data, error } = await supabase
-      .from('subscriptions')
-      .update({
-        plan_type: planType,
-        stripe_subscription_id: stripeData.subscriptionId,
-        stripe_customer_id: stripeData.customerId,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', userId);
+    console.log('Updating subscription in Supabase:', {
+      userId,
+      planType,
+      details
+    });
 
-    if (error) throw error;
-    return data;
+    // First, check if a subscription exists
+    const { data: existingData, error: existingError } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (existingError && existingError.code !== 'PGRST116') { // PGRST116 is "not found"
+      console.error('Error checking existing subscription:', existingError);
+      throw existingError;
+    }
+
+    let result;
+    if (existingData) {
+      // Update existing subscription
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .update({
+          plan_type: planType,
+          stripe_subscription_id: details.subscriptionId,
+          stripe_customer_id: details.customerId,
+          status: details.status || 'active',
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+        .select();
+
+      result = { data, error };
+    } else {
+      // Create new subscription
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .insert([{
+          user_id: userId,
+          plan_type: planType,
+          stripe_subscription_id: details.subscriptionId,
+          stripe_customer_id: details.customerId,
+          status: details.status || 'active'
+        }])
+        .select();
+
+      result = { data, error };
+    }
+
+    if (result.error) {
+      console.error('Error updating/inserting subscription:', result.error);
+      throw result.error;
+    }
+
+    console.log('Subscription updated successfully:', result.data);
+    return result.data;
   } catch (error) {
-    console.error('Error updating subscription:', error);
+    console.error('Error in updateSubscription:', error);
     throw error;
   }
 };
